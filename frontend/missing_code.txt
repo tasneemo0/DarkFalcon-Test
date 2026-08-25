@@ -1,0 +1,316 @@
+{activeItem === 'admin_payments' && isAdminMode && (
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+              <h3 style={{ marginBottom: '16px', fontWeight: 700 }}>{locale === 'ar' ? 'سجل مدفوعات العملاء والفواتير الصادرة' : 'System Payment Invoices Audit'}</h3>
+
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Invoice ID</th>
+                      <th>{locale === 'ar' ? 'العميل' : 'Customer'}</th>
+                      <th>{locale === 'ar' ? 'المبلغ الإجمالي' : 'Total Amount'}</th>
+                      <th>{locale === 'ar' ? 'حالة الدفع' : 'Payment Status'}</th>
+                      <th>{locale === 'ar' ? 'التاريخ والوقت' : 'Paid timestamp'}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {invoices.map(inv => (
+                      <tr key={inv.id}>
+                        <td>#{inv.id}</td>
+                        <td>{inv.user || 'Unknown'}</td>
+                        <td><strong>{inv.amount} SAR</strong></td>
+                        <td>{inv.status}</td>
+                        <td>{new Date(inv.created_at).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          { }
+          {activeItem === 'admin_notifications' && isAdminMode && (
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+              <h3 style={{ marginBottom: '16px', fontWeight: 700 }}>{locale === 'ar' ? 'إرسال تنبيهات جماعية لكافة المستخدمين بالمنصة' : 'Broadcast system-wide alert notifications'}</h3>
+
+              <form onSubmit={handleBroadcastAlert} style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxWidth: '600px' }}>
+                <div>
+                  <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>{locale === 'ar' ? 'عنوان الإشعار:' : 'Notification Title:'}</label>
+                  <input type="text" required value={bcTitle} onChange={(e) => setBcTitle(e.target.value)} placeholder="مثال: صيانة دورية للمنصة" style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>{locale === 'ar' ? 'قناة الإرسال:' : 'Notification type:'}</label>
+                  <select value={bcType} onChange={(e) => setBcType(e.target.value)} style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }}>
+                    <option value="update">{locale === 'ar' ? 'إشعار المنصة (تحديث بالسيستم)' : 'Platform System Update alert'}</option>
+                    <option value="expiry">{locale === 'ar' ? 'تحذير انتهاء الباقة' : 'Subscription warning'}</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>{locale === 'ar' ? 'محتوى الرسالة:' : 'Notification content details:'}</label>
+                  <textarea rows={6} required value={bcContent} onChange={(e) => setBcContent(e.target.value)} placeholder="اكتب تفاصيل الإشعار هنا للمستخدمين..." style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+                </div>
+
+                <button type="submit" className="btn btn-primary">
+                  {locale === 'ar' ? 'إرسال البث الجماعي الآن ⚡' : 'Broadcast Alert Notification ⚡'}
+                </button>
+              </form>
+            </div>
+          )}
+
+          { }
+          {activeItem === 'admin_tickets' && isAdminMode && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.5fr', gap: '24px' }}>
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+                <h3 style={{ marginBottom: '14px', fontWeight: 700 }}>{locale === 'ar' ? 'تذاكر الدعم الفني المعلقة بالمنصة' : 'Support Tickets Queue'}</h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {tickets.map(t => (
+                    <div key={t.id} onClick={() => setActiveTicket(t)} style={{
+                      padding: '14px', border: '1px solid var(--border-light)', borderRadius: '8px', cursor: 'pointer',
+                      background: activeTicket?.id === t.id ? 'var(--primary-lighter)' : 'var(--bg-tertiary)'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <strong>{t.subject}</strong>
+                        <span style={{ fontSize: '11px', color: '#EB5757' }}>{t.priority.toUpperCase()}</span>
+                      </div>
+                      <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t.user_email}</span>
+                      <span style={{ fontSize: '11px', display: 'block', marginTop: '6px', color: 'var(--text-tertiary)' }}>{t.status.toUpperCase()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {activeTicket && (
+                <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <h3 style={{ fontWeight: 700 }}>Ticket #{activeTicket.id}: {activeTicket.subject}</h3>
+                  <p style={{ background: 'var(--bg-tertiary)', padding: '12px', borderRadius: '6px', fontSize: '14px' }}>{activeTicket.description}</p>
+
+                  <div style={{ flex: 1, maxHeight: '200px', overflow: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', border: '1px solid var(--border-light)', padding: '12px', borderRadius: '6px' }}>
+                    {(activeTicket.messages || []).map((m: any) => (
+                      <div key={m.id} style={{ alignSelf: m.sender_email === user.email ? 'flex-end' : 'flex-start', background: m.sender_email === user.email ? 'var(--primary-lighter)' : '#f2f2f2', padding: '8px 12px', borderRadius: '8px', maxWidth: '80%', fontSize: '13px' }}>
+                        <strong>{m.sender_email}:</strong> {m.message}
+                      </div>
+                    ))}
+                  </div>
+
+                  <form onSubmit={handleSendTicketReply} style={{ display: 'flex', gap: '8px' }}>
+                    <input type="text" value={ticketReplyText} onChange={(e) => setTicketReplyText(e.target.value)} placeholder="Type reply..." style={{ flex: 1, padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+                    <button type="submit" className="btn btn-primary">Send</button>
+                  </form>
+                </div>
+              )}
+            </div>
+          )}
+
+          { }
+          {activeItem === 'admin_agreements' && isAdminMode && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+                <h3 style={{ marginBottom: '16px', fontWeight: 700 }}>{locale === 'ar' ? 'إدارة اتفاقيات وبنود شروط الخدمة للعملاء' : 'Platform Consent Agreements Builder'}</h3>
+
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>{locale === 'ar' ? 'حالة التفعيل' : 'Active Status'}</th>
+                      <th>{locale === 'ar' ? 'تاريخ الإنشاء' : 'Created at'}</th>
+                      <th>{locale === 'ar' ? 'تصدير التقارير' : 'Consents signatures report'}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {agreements.map(agr => (
+                      <tr key={agr.id}>
+                        <td style={{ fontWeight: 700 }}>{agr.title}</td>
+                        <td>{agr.is_active ? 'Active' : 'Inactive'}</td>
+                        <td>{new Date(agr.created_at).toLocaleDateString()}</td>
+                        <td>
+                          <a href={`${API_BASE_URL}/api/v1/whatsapp/admin/agreements/${agr.id}/signatures/pdf/`} download className="btn btn-xs btn-outline">
+                            {locale === 'ar' ? 'تصدير PDF الفورية للموقعين' : 'Download signed consents PDF'}
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              { }
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+                <h3 style={{ marginBottom: '14px', fontWeight: 700 }}>{locale === 'ar' ? 'سجل تواقيع موافقات العملاء المسجلين' : 'Client Consent Signatures tracker Log'}</h3>
+
+                <div className={styles.tableWrapper}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>{locale === 'ar' ? 'العميل' : 'Client Email'}</th>
+                        <th>{locale === 'ar' ? 'الاسم بالكامل' : 'Signed Full Name'}</th>
+                        <th>{locale === 'ar' ? 'الجوال المصدّق' : 'Verified phone'}</th>
+                        <th>{locale === 'ar' ? 'الاتفاقية' : 'Agreement'}</th>
+                        <th>{locale === 'ar' ? 'عنوان الـ IP' : 'Consent signing IP'}</th>
+                        <th>{locale === 'ar' ? 'تاريخ التوقيع' : 'Signed Timestamp'}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {adminSignatures.map(sig => (
+                        <tr key={sig.id}>
+                          <td>{sig.email}</td>
+                          <td>{sig.full_name}</td>
+                          <td>{sig.phone_number}</td>
+                          <td>{sig.agreement_title}</td>
+                          <td>{sig.ip_address}</td>
+                          <td>{new Date(sig.timestamp).toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          { }
+          {activeItem === 'admin_settings' && isAdminMode && (
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)', maxWidth: '600px' }}>
+              <h3 style={{ marginBottom: '16px', fontWeight: 700 }}>{locale === 'ar' ? 'إعدادات النظام والربط العام' : 'System-wide credentials configuration'}</h3>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div>
+                  <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>SMTP Host Server:</label>
+                  <input type="text" defaultValue="smtp.mailtrap.io" style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>SMTP Port:</label>
+                  <input type="text" defaultValue="2525" style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>Telegram Bot Token alert:</label>
+                  <input type="password" value="tlg_bot_xxxxxx" readOnly style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>Stripe Payment API gateway Key:</label>
+                  <input type="password" value="sk_test_xxxxxx" readOnly style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+                </div>
+
+                <button onClick={() => alert('Settings Saved!')} className="btn btn-primary" style={{ marginTop: '10px' }}>
+                  {locale === 'ar' ? 'حفظ التعديلات' : 'Save Credentials'}
+                </button>
+              </div>
+            </div>
+          )}
+
+        </div>
+      </main>
+
+      { }
+      { }
+      { }
+
+      { }
+      {isAgreementModalOpen && selectedAgreement && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '16px' }}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-xl)', width: '100%', maxWidth: '600px', padding: '28px', maxHeight: '90vh', overflow: 'auto' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '14px', borderBottom: '1px solid var(--border-light)', paddingBottom: '8px' }}>
+              {locale === 'ar' ? `اتفاقية استخدام الخدمة: ${selectedAgreement.title}` : `Service Consent Terms: ${selectedAgreement.title}`}
+            </h3>
+
+            { }
+            <div style={{
+              background: 'var(--bg-tertiary)', padding: '14px', borderRadius: '8px', fontSize: '13px', lineHeight: '1.6',
+              maxHeight: '200px', overflow: 'auto', marginBottom: '18px', color: 'var(--text-secondary)'
+            }}>
+              {selectedAgreement.content}
+            </div>
+
+            <form onSubmit={handleSignAgreement} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <label style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>{locale === 'ar' ? 'الاسم بالكامل:' : 'Full Name:'}</label>
+                <input type="text" required value={consentName} onChange={(e) => setConsentName(e.target.value)} placeholder="اكتب اسمك الثلاثي" style={{ width: '100%', padding: '8px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>{locale === 'ar' ? 'البريد الإلكتروني:' : 'Email Address:'}</label>
+                <input type="email" required value={consentEmail} onChange={(e) => setConsentEmail(e.target.value)} placeholder="email@example.com" style={{ width: '100%', padding: '8px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>{locale === 'ar' ? 'رقم الهاتف:' : 'Phone Number:'}</label>
+                <input type="text" required value={consentPhone} onChange={(e) => setConsentPhone(e.target.value)} placeholder="+966500000000" style={{ width: '100%', padding: '8px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+              </div>
+
+              <label style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '12px', marginTop: '6px' }}>
+                <input type="checkbox" checked={consentAccepted} onChange={(e) => setConsentAccepted(e.target.checked)} />
+                <span>{locale === 'ar' ? 'أوافق على جميع الشروط والأحكام الخاصة باتفاقية الاستخدام الموضحة أعلاه.' : 'I accept the terms and conditions outlined in the agreement above.'}</span>
+              </label>
+
+              <div style={{ display: 'flex', gap: '8px', marginTop: '16px', justifyContent: 'flex-end' }}>
+                <button type="button" onClick={() => setIsAgreementModalOpen(false)} className="btn btn-outline">
+                  {locale === 'ar' ? 'إلغاء' : 'Cancel'}
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  {locale === 'ar' ? 'الموافقة والتوقيع ✍' : 'Agree & Sign ✍'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      { }
+      {isModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '16px' }}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-xl)', width: '100%', maxWidth: '500px', padding: '28px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '20px' }}>
+              {locale === 'ar' ? 'إضافة جهاز / مثيل واتساب جديد بالمنصة' : 'Connect New WhatsApp Device'}
+            </h3>
+
+            <form onSubmit={handleCreateInstance} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
+                  {locale === 'ar' ? 'اسم الجهاز (للتمييز فقط):' : 'Device / Instance Name:'}
+                </label>
+                <input type="text" value={newInstanceName} onChange={(e) => setNewInstanceName(e.target.value)} placeholder="Sales Line, Support Phone" required style={{ width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
+                  {locale === 'ar' ? 'نوع الاتصال (الربط spec):' : 'Connection Type:'}
+                </label>
+                <select value={newInstanceType} onChange={(e) => setNewInstanceType(e.target.value)} style={{ width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-light)', borderRadius: '4px' }}>
+                  <option value="web_qr">{locale === 'ar' ? 'واتساب ويب - مسح كود QR (مستحسن)' : 'WhatsApp Web - QR Scan (Recommended)'}</option>
+                  <option value="meta">{locale === 'ar' ? 'واجهة Meta Cloud API الرسمية' : 'Meta Cloud API Official'}</option>
+                </select>
+              </div>
+
+              {newInstanceType === 'meta' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', border: '1px solid var(--border-light)', padding: '16px', borderRadius: '4px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px' }}>Phone Number ID:</label>
+                    <input type="text" value={newPhoneId} onChange={(e) => setNewPhoneId(e.target.value)} required style={{ width: '100%', padding: '6px', background: 'var(--bg-primary)' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px' }}>WABA Account ID:</label>
+                    <input type="text" value={newWabaId} onChange={(e) => setNewWabaId(e.target.value)} required style={{ width: '100%', padding: '6px', background: 'var(--bg-primary)' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px' }}>Meta Access Token:</label>
+                    <input type="text" value={newAccessToken} onChange={(e) => setNewAccessToken(e.target.value)} required style={{ width: '100%', padding: '6px', background: 'var(--bg-primary)' }} />
+                  </div>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '16px', justifyContent: 'flex-end' }}>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-outline">
+                  {locale === 'ar' ? 'إلغاء' : 'Cancel'}
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  {locale === 'ar' ? 'تأكيد الإضافة' : 'Confirm Device'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      { }
+      

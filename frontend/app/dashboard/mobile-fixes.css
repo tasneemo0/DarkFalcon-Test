@@ -1,0 +1,111 @@
+/* --- PLAYGROUND (Try It Now) --- */
+.playgroundGrid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 992px) {
+  .playgroundGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- MOBILE CARDS TABLE (Accounts & Settings) --- */
+.mobileCardsTable {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .mobileCardsTable thead {
+    display: none;
+  }
+
+  .mobileCardsTable tbody tr {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .mobileCardsTable td {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-light);
+    word-break: break-all;
+    white-space: normal;
+    text-align: left;
+    gap: 4px;
+    max-width: 100%;
+  }
+
+  .mobileCardsTable td:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}
+
+
+.interactiveBotGrid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+}
+
+@media (max-width: 992px) {
+  .interactiveBotGrid {
+    grid-template-columns: 1fr;
+}
+
+/* --- GLOBAL MOBILE FIXES (Dashboards) --- */
+@media (max-width: 768px) {
+  body, html {
+    overflow-x: hidden;
+  }
+
+  /* Target all buttons within dashboards to be touch friendly */
+  button, .btn {
+    min-height: 44px !important;
+  }
+
+  /* Modals constraints */
+  .modalContent, [class*="modalContent"] {
+    width: 95% !important;
+    max-width: 95% !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    margin: 5vh auto !important;
+  }
+}/* Modern Premium SaaS Pricing Plans Styles */
+@keyframes fadeInUpPricing {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.1); }
+  50% { box-shadow: 0 0 20px 0 rgba(255,255,255,0.2); }
+  100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.1); }
+}
+.pricing-card-hover:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15) !important;
+}
+.pricing-card-hover {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .pricing-card-hover {
+    transition: none;
+  }
+  .pricing-card-hover:hover {
+    transform: none;
+  }
+  .pricing-plan-animated {
+    animation: none !important;
+  }
+}

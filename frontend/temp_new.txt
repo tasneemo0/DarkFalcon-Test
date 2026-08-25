@@ -1,0 +1,552 @@
+          {activeItem === 'interactive_bot' && !isAdminMode && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+              {/* 1. BRAND IDENTITY & PAGE HEADER */}
+              <div style={{
+                background: '#0B0D14',
+                borderRadius: 'var(--radius-xl)',
+                padding: '32px 24px',
+                color: 'white',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                border: '1px solid rgba(255,255,255,0.05)',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <div style={{
+                  position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                  background: 'radial-gradient(circle at 100% 0%, rgba(245,130,50,0.15), transparent 40%)',
+                  pointerEvents: 'none'
+                }} />
+                
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                  <h2 style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '28px', fontWeight: 800, margin: 0, color: 'white' }}>
+                    <Bot size={32} color="rgba(245,130,50,0.9)" />
+                    {locale === 'ar' ? 'المجيب التلقائي' : 'Auto Responder'}
+                  </h2>
+                  <p style={{ margin: '8px 0 0 0', opacity: 0.7, fontSize: '15px' }}>
+                    {locale === 'ar' ? 'أنشئ بوت واتساب ذكي لإدارة رسائل العملاء والردود التلقائية.' : 'Create a smart WhatsApp bot to manage customer messages and auto-replies.'}
+                  </p>
+                </div>
+
+                {/* Header Status Area */}
+                <div style={{
+                  display: 'flex',
+                  gap: '24px',
+                  alignItems: 'center',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  padding: '12px 24px',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  backdropFilter: 'blur(10px)',
+                  position: 'relative',
+                  zIndex: 1
+                }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>{locale === 'ar' ? 'الجهاز' : 'Device'}</span>
+                    <span style={{ fontSize: '14px', fontWeight: 600, color: 'white' }}>{selectedInstance ? selectedInstance.instance_name : (locale === 'ar' ? 'غير محدد' : 'None')}</span>
+                  </div>
+                  
+                  <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)' }} />
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>{locale === 'ar' ? 'الحالة' : 'Status'}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <div style={{ 
+                        width: '8px', height: '8px', borderRadius: '50%', 
+                        background: !selectedInstance ? '#6B7280' : (selectedInstance.status === 'connected' ? '#10B981' : '#EF4444'),
+                        boxShadow: `0 0 8px ${!selectedInstance ? '#6B7280' : (selectedInstance.status === 'connected' ? '#10B981' : '#EF4444')}`
+                      }} />
+                      <span style={{ fontSize: '14px', fontWeight: 600, color: 'white' }}>
+                        {!selectedInstance ? (locale === 'ar' ? 'لا يوجد' : 'N/A') : (selectedInstance.status === 'connected' ? (locale === 'ar' ? 'متصل' : 'Connected') : (locale === 'ar' ? 'غير متصل' : 'Disconnected'))}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)' }} />
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>{locale === 'ar' ? 'الوضع' : 'Mode'}</span>
+                    <span style={{ fontSize: '14px', fontWeight: 600, color: 'white' }}>
+                      {botMode === 'qa' ? (locale === 'ar' ? 'البوت التفاعلي' : 'Interactive Bot') : (locale === 'ar' ? 'معطل' : 'Disabled')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {instances.length === 0 ? (
+                <div style={{ background: '#0B0D14', border: '1px solid rgba(255,255,255,0.05)', padding: '48px', borderRadius: 'var(--radius-xl)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ width: '64px', height: '64px', background: 'rgba(245,130,50,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Smartphone size={32} color="rgba(245,130,50,0.9)" />
+                  </div>
+                  <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: 'white' }}>{locale === 'ar' ? 'لم يتم اختيار جهاز' : 'No device selected'}</h3>
+                  <p style={{ color: 'varى(--text-tertiary)', fontSize: '15px', margin: 0, maxWidth: '400px' }}>
+                    {locale === 'ar' ? 'اختر جهاز واتساب لتفعيل المجيب التلقائي وإدارة الردود.' : 'Select a WhatsApp device to enable auto-responder and manage replies.'}
+                  </p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'flex-start' }}>
+
+                  {/* Right/Left Column: Settings & Options */}
+                  <div style={{ flex: '1 1 320px', display: 'flex', flexDirection: 'column', gap: '24px', minWidth: 0 }}>
+
+                    {/* 3. DEVICE SELECTION CARD */}
+                    <div style={{ background: '#0B0D14', border: '1px solid rgba(255,255,255,0.05)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                        <h3 style={{ margin:
+                        0 , fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', color: 'white', fontSize: '16px' }}>
+                          <Smartphone size={18} color="rgba(245,130,50,0.9)" />
+                          {locale === 'ar' ? 'الجهاز النشط' : 'Active Device'}
+                        </h3>
+                        
+                        <div style={{ position: 'relative' }}>
+                          <select
+                            value={selectedInstance?.id || ''}
+                            onChange={(e) => {
+                              const inst = instances.find(i => i.id === Number(e.target.value));
+                              setSelectedInstance(inst || null);
+                            }}
+                            style={{ 
+                              position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', 
+                              opacity: 0, cursor: 'pointer', zIndex: 2 
+                            }}
+                          >
+                            <option value="">{locale === 'ar' ? '-- اختر جهازاً --' : '-- Choose Device --'}</option>
+                            {instances.map(inst => (
+                              <option key={inst.id} value={inst.id}>
+                                {inst.instance_name} - {inst.status === 'connected' ? 'متصل' : 'غير متصل'}
+                              </option>
+                            ))}
+                          </select>
+                          <button style={{ 
+                            background: 'rgba(255,255,255,0.03)', 
+                            border: '1px solid rgba(255,255,255,0.12)', 
+                            color: 'white', 
+                            padding: '8px 16px', 
+                            borderRadius: '8px', 
+                            fontSize: '13px', 
+                            fontWeight: 600,
+                            pointerEvents: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}>
+                            {locale === 'ar' ? 'تغيير الجهاز' : 'Change Device'} <ChevronDown size={14} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {selectedInstance ? (
+                        <div style={{ 
+                          background: 'rgba(255,255,255,0.02)', 
+                          border: '1px solid rgba(255,255,255,0.05)', 
+                          padding: '16px', 
+                          borderRadius: '12px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '12px'
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ color: 'white', fontWeight: 600, fontSize: '15px' }}>{selectedInstance.instance_name}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: selectedInstance.status === 'connected' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', padding: '4px 10px', borderRadius: '20px' }}>
+                              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: selectedInstance.status === 'connected' ? '#10B981' : '#EF4444' }} />
+                              <span style={{ fontSize: '12px', fontWeight: 600, color: selectedInstance.status === 'connected' ? '#10B981' : '#EF4444' }}>
+                                {selectedInstance.status === 'connected' ? (locale === 'ar' ? 'متصل' : 'Connected') : (locale === 'ar' ? 'غير متصل' : 'Disconnected')}
+                              </span>
+                            </div>
+                          </div>
+                          {selectedInstance.phone_number && (
+                            <div style={{ fontSize: '13px', color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <Phone size={14} /> {selectedInstance.phone_number}
+                            </div>
+                          )}
+                          
+                          {selectedInstance.status !== 'connected' && (
+                            <div style={{ marginTop: '4px', padding: '10px 12px', background: 'rgba(235, 87, 87, 0.1)', border: '1px solid rgba(235, 87, 87, 0.2)', borderRadius: '8px', color: '#EB5757', fontSize: '13px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                              <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
+                              <span>{locale === 'ar' ? 'الجهاز غير متصل، لن يعمل المجيب حتى إعادة الاتصال.' : 'Device disconnected, the bot will not work until the device is connected.'}</span>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div style={{ padding: '20px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                          <span style={{ color: 'var(--text-tertiary)', fontSize: '14px' }}>{locale === 'ar' ? 'يرجى اختيار جهاز للبدء' : 'Please select a device to start'}</span>
+                        </div>
+                      )}
+                    </div>
+
+
+                    {selectedInstance && (
+                      <>
+                        {/* 6. SETTINGS AREA - Mode Selection */}
+                        <div style={{ background: '#0B0D14', border: '1px solid rgba(255,255,255,0.05)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '16px' }}>
+                            <h3 style={{ margin: 0, fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', color: 'white', fontSize: '16px' }}>
+                              <Settings size={18} color="rgba(245,130,50,0.9)" />
+                              {locale === 'ar' ? 'إعدادات المجيب' : 'Responder Settings'}
+                            </h3>
+                          </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+                            {/* Disabled Mode */}
+                            <div 
+                              onClick={() => setBotMode('off')}
+                              style={{ 
+                                padding: '16px', background: botMode === 'off' ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)', 
+                                border: `1px solid ${botMode === 'off' ? 'rgba(245,130,50,0.4)' : 'rgba(255,255,255,0.05)'}`, 
+                                borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s ease',
+                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                boxShadow: botMode === 'off' ? '0 0 12px rgba(245,130,50,0.1)' : 'none'
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <PowerOff size={20} color={botMode === 'off' ? 'rgba(245,130,50,0.9)' : 'var(--text-secondary)'} />
+                                </div>
+                                <div>
+                                  <div style={{ color: 'white', fontWeight: 600, fontSize: '15px' }}>{locale === 'ar' ? 'معطل' : 'Disabled'}</div>
+                                  <div style={{ color: 'var(--text-tertiary)', fontSize: '13px' }}>{locale === 'ar' ? 'إيقاف الردود التلقائية' : 'Stop auto-replies'}</div>
+                                </div>
+                              </div>
+                              {botMode === 'off' && <CheckCircle2 size={20} color="rgba(245,130,50,0.9)" />}
+                            </div>
+
+                            {/* Interactive Bot Mode */}
+                            <div 
+                              onClick={() => setBotMode('qa')}
+                              style={{ 
+                                padding: '16px', background: botMode === 'qa' ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)', 
+                                border: `1px solid ${botMode === 'qa' ? 'rgba(245,130,50,0.4)' : 'rgba(255,255,255,0.05)'}`, 
+                                borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s ease',
+                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                boxShadow: botMode === 'qa' ? '0 0 12px rgba(245,130,50,0.1)' : 'none'
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <Zap size={20} color={botMode === 'qa' ? 'rgba(245,130,50,0.9)' : 'var(--text-secondary)'} />
+                                </div>
+                                <div>
+                                  <div style={{ color: 'white', fontWeight: 600, fontSize: '15px' }}>{locale === 'ar' ? 'البوت التفاعلي' : 'Interactive Bot'}</div>
+                                  <div style={{ color: 'var(--text-tertiary)', fontSize: '13px' }}>{locale === 'ar' ? 'إعدادات الردود التلقائية والقواعد' : 'Rule-based precise replies'}</div>
+                                </div>
+                              </div>
+                              {botMode === 'qa' && <CheckCircle2 size={20} color="rgba(245,130,50,0.9)" />}
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', opacity: botMode === 'qa' ? 1 : 0.4, pointerEvents: botMode === 'qa' ? 'auto' : 'none' }}>
+                            <div>
+                              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, marginBottom: '8px', color: 'var(--text-secondary)' }}><Bot size={14} /> {locale === 'ar' ? 'اسم البوت:' : 'Bot Name:'}</label>
+                              <input type="text" value={interactiveBotName} onChange={e => setInteractiveBotName(e.target.value)} placeholder={locale === 'ar' ? "مثال: المساعد الذكي" : "e.g. Smart Assistant"} style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: '8px' }} />
+                            </div>
+                            {botMode === 'qa' && (
+                              <div>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, marginBottom: '8px', color: 'var(--text-secondary)' }}><KeyRound size={14} /> {locale === 'ar' ? 'كلمات التشغيل (مفصولة بفاصلة):' : 'Trigger Words:'}</label>
+                                <input type="text" value={interactiveTrigger} onChange={e => setInteractiveTrigger(e.target.value)} placeholder="مرحبا, السلام عليكم, القائمة" style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: '8px' }} />
+                              </div>
+                            )}
+                            <div style={{ gridColumn: '1 / -1' }}>
+                              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, marginBottom: '8px', color: 'var(--text-secondary)' }}><MessageCircle size={14} /> {locale === 'ar' ? 'الرسالة الترحيبية:' : 'Welcome Message:'}</label>
+                              <textarea rows={3} value={interactiveWelcome} onChange={e => setInteractiveWelcome(e.target.value)} placeholder={locale === 'ar' ? "أهلاً بك في خدمة العملاء، الرجاء اختيار أحد الأرقام التالية:" : "Welcome! Please select an option:"} style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: '8px', resize: 'vertical' }} />
+                            </div>
+                            {botMode === 'qa' && (
+                              <>
+                                <div>
+                                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, marginBottom: '8px', color: 'var(--text-secondary)' }}><AlertCircle size={14} /> {locale === 'ar' ? 'رسالة الخيار الخاطئ:' : 'Invalid Option Message:'}</label>
+                                  <input type="text" value={interactiveInvalid} onChange={e => setInteractiveInvalid(e.target.value)} placeholder={locale === 'ar' ? "عذراً، الخيار غير صحيح." : "Sorry, invalid option."} style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: '8px' }} />
+                                </div>
+                                <div>
+                                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, marginBottom: '8px', color: 'var(--text-secondary)' }}><FileText size={14} /> {locale === 'ar' ? 'نص التذييل (اختياري):' : 'Footer Text:'}</label>
+                                  <input type="text" value={interactiveFooter} onChange={e => setInteractiveFooter(e.target.value)} placeholder="DarkFalcon API" style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: '8px' }} />
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Options List (Only for Keywords) */}
+                        {botMode === 'qa' && (
+                          <div style={{ background: '#0B0D14', border: '1px solid rgba(255,255,255,0.05)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                              <h3 style={{ margin: 0, fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', color: 'white', fontSize: '16px' }}>
+                                <ClipboardList size={18} color="rgba(245,130,50,0.9)" />
+                                {locale === 'ar' ? 'قائمة الخيارات' : 'Menu Options'}
+                              </h3>
+                              <span style={{ background: 'rgba(245,130,50,0.15)', color: 'rgba(245,130,50,0.9)', padding: '4px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: 600 }}>
+                                {faqRules.length} {locale === 'ar' ? 'خيارات' : 'Options'}
+                              </span>
+                            </div>
+
+                            {/* Add New Option Form */}
+                            <div style={{ background: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '12px', marginBottom: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                              <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', color: 'white' }}>
+                                <Plus size={16} color="rgba(245,130,50,0.9)" /> {locale === 'ar' ? 'إضافة خيار جديد للقائمة' : 'Add New Option'}
+                              </h4>
+                              <form onSubmit={handleAddFaqRule} style={{ display: 'grid', gridTemplateColumns: '80px 1fr 1fr', gap: '12px', alignItems: 'end' }}>
+                                <div>
+                                  <label style={{ fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '6px', color: 'var(--text-secondary)' }}>{locale === 'ar' ? 'رقم الخيار:' : 'Number:'}</label>
+                                  <input type="text" required value={newKeyword} onChange={(e) => { setNewKeyword(e.target.value); setNewMatchType('exact'); }} placeholder="1" style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: '6px', textAlign: 'center', fontWeight: 700 }} />
+                                </div>
+                                <div>
+                                  <label style={{ fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '6px', color: 'var(--text-secondary)' }}>{locale === 'ar' ? 'اسم الخيار:' : 'Option Name:'}</label>
+                                  <input type="text" required value={newActionPayload} onChange={(e) => setNewActionPayload(e.target.value)} placeholder={locale === 'ar' ? "الاستعلام عن الأسعار" : "Inquire Prices"} style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: '6px' }} />
+                                </div>
+                                <div>
+                                  <label style={{ fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '6px', color: 'var(--text-secondary)' }}>{locale === 'ar' ? 'نوع الإجراء:' : 'Action Type:'}</label>
+                                  <select value={newActionType} onChange={(e) => setNewActionType(e.target.value)} style={{ width: '100%', padding: '10px', background: '#1A1D24', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: '6px' }}>
+                                    <option value="text">{locale === 'ar' ? 'رد نصي' : 'Text Reply'}</option>
+                                    <option value="image">{locale === 'ar' ? 'إرسال صورة' : 'Send Image'}</option>
+                                    <option value="file">{locale === 'ar' ? 'إرسال ملف' : 'Send File'}</option>
+                                    <option value="webhook">{locale === 'ar' ? 'Webhook' : 'Webhook'}</option>
+                                    <option value="handover">{locale === 'ar' ? 'تحويل للدعم' : 'Support Handover'}</option>
+                                  </select>
+                                </div>
+                                <div style={{ gridColumn: '1 / span 2' }}>
+                                  <label style={{ fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '6px', color: 'var(--text-secondary)' }}>{locale === 'ar' ? 'محتوى الرد:' : 'Content / payload:'}</label>
+                                  <input type="text" required value={newAnswer} onChange={(e) => setNewAnswer(e.target.value)} placeholder={locale === 'ar' ? "أدخل النص أو رابط الملف هنا..." : "Enter text or link..."} style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: '6px' }} />
+                                </div>
+                                <button type="submit" disabled={addingRule} style={{ height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s' }}>
+                                  <Plus size={16} /> {locale === 'ar' ? 'إضافة للقائمة' : 'Add to Menu'}
+                                </button>
+                              </form>
+                            </div>
+
+                            {/* Options Cards */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                              {faqRules.length === 0 ? (
+                                <div style={{ padding: '30px', textAlign: 'center', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--text-tertiary)' }}>
+                                  <ClipboardList size={40} style={{ opacity: 0.2, marginBottom: '12px' }} />
+                                  <p style={{ margin: 0 }}>{locale === 'ar' ? 'لا توجد خيارات مضافة. قم بإضافة خيارات لإنشاء القائمة.' : 'No options added yet.'}</p>
+                                </div>
+                              ) : (
+                                faqRules.map((rule, index) => (
+                                  <div key={rule.id} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '16px', padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', transition: 'all 0.2s', opacity: rule.is_active ? 1 : 0.5 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                      <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)' }}><ArrowUp size={16} /></button>
+                                      <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)' }}><ArrowDown size={16} /></button>
+                                    </div>
+                                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(245,130,50,0.15)', color: 'rgba(245,130,50,0.9)', border: '1px solid rgba(245,130,50,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '18px', flexShrink: 0 }}>
+                                      {rule.keyword}
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                      <h5 style={{ margin: '0 0 4px 0', fontSize: '15px', fontWeight: 700, color: 'white' }}>{rule.action_payload || (locale === 'ar' ? 'بدون اسم' : 'Unnamed Option')}</h5>
+                                      <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '250px' }}>
+                                        {rule.answer}
+                                      </p>
+                                    </div>
+                                    <div style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
+                                      {rule.action_type === 'text' ? 'رد نصي' : rule.action_type === 'image' ? 'صورة' : rule.action_type === 'file' ? 'ملف' : rule.action_type === 'webhook' ? 'Webhook' : 'تحويل للدعم'}
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                                      <button onClick={() => handleToggleRuleStatus(rule.id, !rule.is_active)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: rule.is_active ? '#10B981' : 'var(--text-tertiary)', display: 'flex', alignItems: 'center' }}>
+                                        {rule.is_active ? <ToggleRight size={24} /> : <ToggleLeft size={24} />}
+                                      </button>
+                                      <button style={{ padding: '6px', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: 'white', cursor: 'pointer' }}><Pencil size={14} /></button>
+                                      <button onClick={() => handleDeleteFaqRule(rule.id)} style={{ padding: '6px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '6px', color: '#EF4444', cursor: 'pointer' }}><Trash2 size={14} /></button>
+                                    </div>
+                                  </div>
+                                ))
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Save Button */}
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', background: '#0B0D14', padding: '24px', borderRadius: 'var(--radius-xl)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                          <button
+                            onClick={() => {
+                              handleSaveBotSettings(selectedInstance.id);
+                              if (botMode === 'qa' && faqRules.length > 0) {
+                                alert(locale === 'ar' ? 'تم حفظ التعديلات بنجاح' : 'Saved successfully');
+                              }
+                            }}
+                            disabled={savingBotSettings || (botMode === 'qa' && faqRules.length === 0)}
+                            style={{
+                              width: '100%',
+                              height: '52px',
+                              fontSize: '16px',
+                              fontWeight: 700,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '10px',
+                              background: (savingBotSettings || (botMode === 'qa' && faqRules.length === 0)) ? 'rgba(255,255,255,0.05)' : 'rgba(245,130,50,0.15)',
+                              color: (savingBotSettings || (botMode === 'qa' && faqRules.length === 0)) ? 'rgba(255,255,255,0.3)' : 'rgba(245,130,50,0.9)',
+                              border: (savingBotSettings || (botMode === 'qa' && faqRules.length === 0)) ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(245,130,50,0.4)',
+                              borderRadius: '12px',
+                              cursor: (savingBotSettings || (botMode === 'qa' && faqRules.length === 0)) ? 'not-allowed' : 'pointer',
+                              transition: 'all 0.3s ease'
+                            }}
+                          >
+                            {savingBotSettings ? '...' : <><Save size={20} /> {locale === 'ar' ? 'حفظ الإعدادات' : 'Save Settings'}</>}
+                          </button>
+                          {botMode === 'qa' && faqRules.length === 0 && (
+                            <div style={{ marginTop: '12px', fontSize: '13px', color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <AlertCircle size={14} />
+                              {locale === 'ar' ? 'أضف خيارًا واحدًا على الأقل لتتمكن من الحفظ.' : 'Add at least one option to save.'}
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* 4. CHAT PREVIEW DESIGN */}
+                  <div style={{ flex: '0 0 auto', width: '100%', maxWidth: '380px', margin: '0 auto' }}>
+                    <div style={{ 
+                      background: '#0B0D14', 
+                      borderRadius: '24px', 
+                      padding: '8px', 
+                      border: '1px solid rgba(255,255,255,0.05)', 
+                      boxShadow: '0 24px 48px rgba(0,0,0,0.5)', 
+                      position: 'relative', 
+                      height: '650px', 
+                      display: 'flex', 
+                      flexDirection: 'column',
+                      overflow: 'hidden'
+                    }}>
+                      {/* Preview Header */}
+                      <div style={{ 
+                        background: 'rgba(255,255,255,0.02)', 
+                        padding: '16px', 
+                        borderRadius: '16px 16px 0 0', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '12px', 
+                        borderBottom: '1px solid rgba(255,255,255,0.05)'
+                      }}>
+                        <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Bot size={24} color="white" />
+                        </div>
+                        <div>
+                          <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: 'white' }}>{interactiveBotName || (locale === 'ar' ? 'المجيب التفاعلي' : 'Interactive Bot')}</h4>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: botMode === 'qa' && selectedInstance?.status === 'connected' ? '#10B981' : '#6B7280' }} />
+                            <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
+                              {botMode === 'qa' && selectedInstance?.status === 'connected' ? (locale === 'ar' ? 'يعمل' : 'Active') : (locale === 'ar' ? 'غير متصل' : 'Offline')}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Chat Body */}
+                      <div style={{ 
+                        flex: 1, 
+                        overflowY: 'auto', 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        gap: '16px', 
+                        padding: '16px',
+                        background: '#0B0D14'
+                      }}>
+                        <div style={{ alignSelf: 'center', background: 'rgba(255,255,255,0.03)', padding: '6px 14px', borderRadius: '12px', fontSize: '11px', color: 'var(--text-tertiary)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                          {locale === 'ar' ? 'المعاينة المباشرة' : 'Live Preview'}
+                        </div>
+
+                        {/* Trigger User Message */}
+                        <div style={{ 
+                          alignSelf: 'flex-start', 
+                          background: 'rgba(255,255,255,0.05)', 
+                          padding: '12px 16px', 
+                          borderRadius: '16px 16px 16px 4px', 
+                          fontSize: '14px', 
+                          color: 'white', 
+                          maxWidth: '85%',
+                          border: '1px solid rgba(255,255,255,0.05)'
+                        }}>
+                          {interactiveTrigger ? interactiveTrigger.split(',')[0].trim() : (locale === 'ar' ? 'مرحبا' : 'Hello')}
+                        </div>
+
+                        {/* Bot Response Message */}
+                        {botMode === 'qa' && selectedInstance?.status === 'connected' && (
+                          <div style={{ 
+                            alignSelf: 'flex-end', 
+                            background: 'rgba(245,130,50,0.1)', 
+                            padding: '12px 16px', 
+                            borderRadius: '16px 16px 4px 16px', 
+                            fontSize: '14px', 
+                            color: 'white', 
+                            maxWidth: '85%',
+                            border: '1px solid rgba(245,130,50,0.2)'
+                          }}>
+                            <p style={{ margin: '0 0 12px 0', whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>
+                              {interactiveWelcome || (locale === 'ar' ? 'أهلاً بك، كيف يمكنني مساعدتك؟' : 'Welcome, how can I help you?')}
+                            </p>
+
+                            {botMode === 'qa' && (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px' }}>
+                                {faqRules.length > 0 ? faqRules.map((rule) => (
+                                  <div key={rule.id} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                    <span style={{ fontWeight: 800, color: 'rgba(245,130,50,0.9)' }}>{rule.keyword} -</span>
+                                    <span style={{ fontWeight: 600, color: 'white' }}>{rule.action_payload || rule.answer}</span>
+                                  </div>
+                                )) : (
+                                  <div style={{ fontStyle: 'italic', color: 'var(--text-tertiary)', fontSize: '12px' }}>
+                                    {locale === 'ar' ? '[سيتم عرض قائمة الخيارات هنا]' : '[Menu options will appear here]'}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {interactiveFooter && (
+                              <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--text-tertiary)', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '8px' }}>
+                                {interactiveFooter}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Preview Invalid Option Simulation (Only QA) */}
+                        {botMode === 'qa' && selectedInstance?.status === 'connected' && interactiveInvalid && (
+                          <>
+                            <div style={{ 
+                              alignSelf: 'flex-start', 
+                              background: 'rgba(255,255,255,0.05)', 
+                              padding: '12px 16px', 
+                              borderRadius: '16px 16px 16px 4px', 
+                              fontSize: '14px', 
+                              color: 'white', 
+                              maxWidth: '85%',
+                              border: '1px solid rgba(255,255,255,0.05)',
+                              marginTop: '8px' 
+                            }}>
+                              99
+                            </div>
+                            <div style={{ 
+                              alignSelf: 'flex-end', 
+                              background: 'rgba(245,130,50,0.1)', 
+                              padding: '12px 16px', 
+                              borderRadius: '16px 16px 4px 16px', 
+                              fontSize: '14px', 
+                              color: 'white', 
+                              maxWidth: '85%',
+                              border: '1px solid rgba(245,130,50,0.2)',
+                              marginTop: '8px' 
+                            }}>
+                              <p style={{ margin: 0, whiteSpace: 'pre-wrap', lineHeight: '1.5', color: '#F87171' }}>
+                                {interactiveInvalid}
+                              </p>
+                            </div>
+                          </>
+                        )}
+
+                      </div>
+
+                      {/* Fake Input */}
+                      <div style={{ background: 'rgba(255,255,255,0.02)', padding: '12px', display: 'flex', gap: '10px', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', height: '40px', borderRadius: '20px', padding: '0 16px', display: 'flex', alignItems: 'center', color: 'var(--text-tertiary)', fontSize: '13px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                          {locale === 'ar' ? 'اكتب رسالة...' : 'Type a message...'}
+                        </div>
+                        <div style={{ width: '40px', height: '40px', background: 'rgba(245,130,50,0.15)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(245,130,50,0.9)', border: '1px solid rgba(245,130,50,0.3)' }}>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" /></svg>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}

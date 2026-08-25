@@ -1,0 +1,209 @@
+/* ============================================================
+   PremiumButton.module.css
+   Ripple, glass reflection, shine sweep, spring lift
+   ============================================================ */
+
+.premiumBtn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  overflow: hidden;
+  font-family: inherit;
+  transition: box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    background 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+  user-select: none;
+}
+
+.premiumBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Variants ───────────────────────────────────────────────── */
+.btnPrimary {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.28);
+}
+
+.btnPrimary:not(:disabled):hover {
+  box-shadow: 0 10px 32px rgba(249, 115, 22, 0.38),
+    0 0 0 1px rgba(249, 115, 22, 0.25);
+}
+
+.btnOutline {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1.5px solid var(--border);
+}
+
+.btnOutline:not(:disabled):hover {
+  border-color: rgba(249, 115, 22, 0.55);
+  color: var(--primary);
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.14),
+    0 0 0 1px rgba(249, 115, 22, 0.15);
+}
+
+.btnGhost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.btnGhost:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+.btnDanger {
+  background: var(--error-bg);
+  color: var(--error);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.btnDanger:not(:disabled):hover {
+  background: var(--error);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.32);
+}
+
+.btnSecondary {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+.btnSecondary:not(:disabled):hover {
+  border-color: rgba(249, 115, 22, 0.4);
+  box-shadow: 0 6px 18px rgba(249, 115, 22, 0.12);
+}
+
+/* ── Sizes ─────────────────────────────────────────────────── */
+.btnSizeXS {
+  padding: 5px 11px;
+  font-size: 11px;
+  border-radius: 8px;
+}
+
+.btnSizeSM {
+  padding: 7px 15px;
+  font-size: 13px;
+  border-radius: 10px;
+}
+
+.btnSizeMD {
+  padding: 10px 20px;
+  font-size: 14px;
+  border-radius: 12px;
+}
+
+.btnSizeLG {
+  padding: 14px 28px;
+  font-size: 16px;
+  border-radius: 14px;
+}
+
+/* ── Glass reflection ─────────────────────────────────────── */
+.glassReflect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Shine sweep (hover) ──────────────────────────────────── */
+.btnShine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.09) 50%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 2;
+  transition: left 0ms;
+}
+
+.premiumBtn:not(:disabled):hover .btnShine {
+  animation: btnShineRun 550ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes btnShineRun {
+  0%   { left: -100%; }
+  100% { left: 140%; }
+}
+
+/* ── Ripple ─────────────────────────────────────────────────── */
+:global(.ripple) {
+  position: absolute;
+  border-radius: 50%;
+  width: 4px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.4);
+  transform: translate(-50%, -50%) scale(0);
+  animation: rippleExpand 600ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  width: 4px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.4);
+  transform: translate(-50%, -50%) scale(0);
+  animation: rippleExpand 600ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  pointer-events: none;
+  z-index: 10;
+}
+
+@keyframes rippleExpand {
+  0%   { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(80); opacity: 0; }
+}
+
+/* ── Icon ───────────────────────────────────────────────────── */
+.icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ── Spinner ─────────────────────────────────────────────────── */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spinBtn 0.8s linear infinite;
+}
+
+@keyframes spinBtn {
+  to { transform: rotate(360deg); }
+}

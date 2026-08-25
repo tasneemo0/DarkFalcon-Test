@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=darkfalcon
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres_secure_pass_123
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=django-insecure-docker-secret-12345
+      - DATABASE_URL=postgres://postgres:postgres_secure_pass_123@db:5432/darkfalcon
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - WHATSAPP_GATEWAY_URL=http://whatsapp_gateway:4000
+    depends_on:
+      - db
+      - redis
+
+  celery_worker:
+    build: .
+    command: celery -A darkfalcon worker --loglevel=info
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=django-insecure-docker-secret-12345
+      - DATABASE_URL=postgres://postgres:postgres_secure_pass_123@db:5432/darkfalcon
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - WHATSAPP_GATEWAY_URL=http://whatsapp_gateway:4000
+    depends_on:
+      - db
+      - redis
+
+  whatsapp_gateway:
+    build:
+      context: ./whatsapp-gateway
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - DJANGO_WEBHOOK_URL=http://web:8000/api/v1/whatsapp/bot/webhook/
+    depends_on:
+      - web
+
+volumes:
+  postgres_data:

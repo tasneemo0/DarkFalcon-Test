@@ -1,0 +1,2753 @@
+﻿'use client';
+
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useApp } from '@/lib/context';
+import { useT } from '@/lib/i18n';
+import styles from './dashboard.module.css';
+import { API_BASE_URL } from '@/lib/api';
+
+const sidebarItems = [
+  { key: 'overview', icon: 'grid', labelAr: 'الرئيسية', labelEn: 'Overview' },
+  { key: 'numbers', icon: 'phone', labelAr: 'أجهزتي (الواتساب)', labelEn: 'My Devices' },
+  { key: 'apiKeys', icon: 'key', labelAr: 'توثيق API', labelEn: 'API Documentation' },
+  { key: 'webhooks', icon: 'webhook', labelAr: 'الويب هوك', labelEn: 'Webhooks' },
+  { key: 'aiRules', icon: 'bot', labelAr: 'المجيب التلقائي الذكي', labelEn: 'Smart AI & FAQ' },
+  { key: 'chatbot', icon: 'message', labelAr: 'سجل حجز البوت', labelEn: 'Booking Chatbot Log' },
+  { key: 'logs', icon: 'template', labelAr: 'سجل العمليات', labelEn: 'Operations Logs' },
+  { key: 'billing', icon: 'template', labelAr: 'الاشتراكات والفوترة', labelEn: 'Billing & Plans' },
+  { key: 'settings', icon: 'settings', labelAr: 'إعدادات الحساب', labelEn: 'Account Settings' },
+  { key: 'profile', icon: 'grid', labelAr: 'الملف الشخصي', labelEn: 'My Profile' },
+];
+
+const adminSidebarItems = [
+  { key: 'admin_overview', icon: 'grid', labelAr: 'إحصائيات المنصة', labelEn: 'Admin Overview' },
+  { key: 'admin_clients', icon: 'grid', labelAr: 'إدارة العملاء', labelEn: 'Client Management' },
+  { key: 'admin_sessions', icon: 'phone', labelAr: 'إدارة الجلسات', labelEn: 'Active Sessions' },
+  { key: 'admin_plans', icon: 'template', labelAr: 'إدارة الباقات', labelEn: 'Plans Management' },
+  { key: 'admin_payments', icon: 'template', labelAr: 'إدارة المدفوعات', labelEn: 'Payment Logs' },
+  { key: 'admin_notifications', icon: 'webhook', labelAr: 'إرسال إشعارات جماعية', labelEn: 'Send Notifications' },
+  { key: 'admin_tickets', icon: 'message', labelAr: 'تذاكر الدعم الفني', labelEn: 'Support Tickets' },
+  { key: 'admin_agreements', icon: 'key', labelAr: 'إدارة الاتفاقيات الشروط', labelEn: 'Consent Agreements' },
+  { key: 'admin_settings', icon: 'settings', labelAr: 'إعدادات النظام', labelEn: 'System Settings' },
+];
+
+const iconMap: Record<string, React.ReactNode> = {
+  grid: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>,
+  message: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>,
+  phone: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2" /><line x1="12" y1="18" x2="12.01" y2="18" /></svg>,
+  template: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="21" x2="9" y2="9" /></svg>,
+  key: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" /></svg>,
+  webhook: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 16.98h-5.99c-1.1 0-1.95.68-2.95 1.39C8.07 19.26 7.51 20 6 20c-1.66 0-3-1.34-3-3s1.34-3 3-3" /><path d="M12 8c0-1.66 1.34-3 3-3s3 1.34 3 3-1.34 3-3 3" /></svg>,
+  settings: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>,
+  bot: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="10" rx="2" /><circle cx="12" cy="5" r="2" /><path d="M12 7v4M8 15h.01M16 15h.01" /></svg>,
+};
+
+export default function DashboardPage() {
+  const { locale, theme, toggleTheme, user, setUser, token, setToken, logout } = useApp();
+  const router = useRouter();
+
+  const [isAdminMode, setIsAdminMode] = useState(false);
+  const [activeItem, setActiveItem] = useState('overview');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const [impersonatingUser, setImpersonatingUser] = useState<string | null>(null);
+
+  const [instances, setInstances] = useState<any[]>([]);
+  const [selectedInstance, setSelectedInstance] = useState<any | null>(null);
+  const [loadingInstances, setLoadingInstances] = useState(true);
+
+  const [isAgreementModalOpen, setIsAgreementModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [agreements, setAgreements] = useState<any[]>([]);
+  const [selectedAgreement, setSelectedAgreement] = useState<any | null>(null);
+
+  const [consentName, setConsentName] = useState('');
+  const [consentEmail, setConsentEmail] = useState('');
+  const [consentPhone, setConsentPhone] = useState('');
+  const [consentAccepted, setConsentAccepted] = useState(false);
+
+  const [newInstanceName, setNewInstanceName] = useState('');
+  const [newInstanceType, setNewInstanceType] = useState('web_qr');
+  const [newPhoneId, setNewPhoneId] = useState('');
+  const [newWabaId, setNewWabaId] = useState('');
+  const [newAccessToken, setNewAccessToken] = useState('');
+
+  const [webhookUrl, setWebhookUrl] = useState('');
+  const [webhookEnabled, setWebhookEnabled] = useState(true);
+  const [whMsgRec, setWhMsgRec] = useState(true);
+  const [whMsgSent, setWhMsgSent] = useState(false);
+  const [whStatChange, setWhStatChange] = useState(true);
+  const [whGroupJoin, setWhGroupJoin] = useState(false);
+  const [whGroupLeave, setWhGroupLeave] = useState(false);
+  const [whQrUpd, setWhQrUpd] = useState(true);
+
+  const [faqRules, setFaqRules] = useState<any[]>([]);
+  const [newKeyword, setNewKeyword] = useState('');
+  const [newAnswer, setNewAnswer] = useState('');
+  const [newMatchType, setNewMatchType] = useState('contains');
+  const [newActionType, setNewActionType] = useState('text');
+  const [newActionPayload, setNewActionPayload] = useState('');
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [addingRule, setAddingRule] = useState(false);
+  const [botMode, setBotMode] = useState('off');
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiApiKey, setAiApiKey] = useState('');
+  const [aiProvider, setAiProvider] = useState('gemini');
+  const [aiModel, setAiModel] = useState('gemini-2.5-flash');
+  const [savingBotSettings, setSavingBotSettings] = useState(false);
+
+  const [apiLogs, setApiLogs] = useState<any[]>([]);
+  const [logSearchQuery, setLogSearchQuery] = useState('');
+
+  const [plans, setPlans] = useState<any[]>([]);
+  const [subscription, setSubscription] = useState<any>(null);
+  const [invoices, setInvoices] = useState<any[]>([]);
+
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  const [editEmail, setEditEmail] = useState('');
+  const [editEmailOtp, setEditEmailOtp] = useState('');
+  const [isEmailOtpModalOpen, setIsEmailOtpModalOpen] = useState(false);
+
+  const [editPhone, setEditPhone] = useState('');
+  const [editPhoneOtp, setEditPhoneOtp] = useState('');
+  const [isPhoneOtpModalOpen, setIsPhoneOtpModalOpen] = useState(false);
+
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [editPassword, setEditPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const [twoFactor, setTwoFactor] = useState(false);
+
+  const [is2faModalOpen, setIs2faModalOpen] = useState(false);
+  const [twoFaSetupPhone, setTwoFaSetupPhone] = useState('');
+  const [twoFaSetupOtp, setTwoFaSetupOtp] = useState('');
+  const [is2faOtpSent, setIs2faOtpSent] = useState(false);
+
+
+  const [restrictIp, setRestrictIp] = useState(false);
+  const [allowedIps, setAllowedIps] = useState('');
+
+  const [sessionLogs, setSessionLogs] = useState<any[]>([]);
+  const [loginHistory, setLoginHistory] = useState<any[]>([]);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+
+  const [notifyNewLogin, setNotifyNewLogin] = useState(true);
+  const [notifyPasswordChange, setNotifyPasswordChange] = useState(true);
+  const [notifyPackageExpiry, setNotifyPackageExpiry] = useState(true);
+  const [notifyWhatsappDisconnect, setNotifyWhatsappDisconnect] = useState(true);
+  const [notifyWebhookFailure, setNotifyWebhookFailure] = useState(true);
+
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [newTicketSubject, setNewTicketSubject] = useState('');
+  const [newTicketDesc, setNewTicketDesc] = useState('');
+  const [newTicketPriority, setNewTicketPriority] = useState('medium');
+  const [ticketReplyText, setTicketReplyText] = useState('');
+  const [activeTicket, setActiveTicket] = useState<any | null>(null);
+
+  const [adminStats, setAdminStats] = useState<any>(null);
+  const [adminClients, setAdminClients] = useState<any[]>([]);
+  const [adminSessions, setAdminSessions] = useState<any[]>([]);
+  const [adminPlans, setAdminPlans] = useState<any[]>([]);
+  const [adminSignatures, setAdminSignatures] = useState<any[]>([]);
+
+  const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
+  const [adminPlanName, setAdminPlanName] = useState('');
+  const [adminPlanPrice, setAdminPlanPrice] = useState('');
+  const [adminPlanDays, setAdminPlanDays] = useState('30');
+  const [adminPlanDevices, setAdminPlanDevices] = useState('3');
+  const [adminPlanMsgs, setAdminPlanMsgs] = useState('1000');
+
+  const [bcTitle, setBcTitle] = useState('');
+  const [bcContent, setBcContent] = useState('');
+  const [bcType, setBcType] = useState('update');
+
+  const [playgroundEndpoint, setPlaygroundEndpoint] = useState('/api/v1/whatsapp/send/text/');
+  const [playgroundBody, setPlaygroundBody] = useState('{\n  "to": "966500000000",\n  "body": "تجربة إرسال رسالة نصية عبر المطورين"\n}');
+  const [playgroundResponse, setPlaygroundResponse] = useState('');
+  const [playgroundLoading, setPlaygroundLoading] = useState(false);
+  const [activeLangTab, setActiveLangTab] = useState('python');
+
+  const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token || localStorage.getItem('df-token')}`,
+      ...(options.headers || {}),
+    };
+    const res = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+    if (res.status === 401) {
+      logout();
+      router.push('/auth/login');
+      throw new Error('Session expired');
+    }
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(errText || 'API request failed');
+    }
+    if (res.status === 204) return null;
+    return res.json();
+  };
+
+  const handleExitImpersonation = () => {
+    const adminToken = localStorage.getItem('df-admin-token');
+    const adminUser = localStorage.getItem('df-admin-user');
+    if (adminToken && adminUser) {
+      localStorage.setItem('df-token', adminToken);
+      localStorage.setItem('df-user', adminUser);
+      setToken(adminToken);
+      setUser(JSON.parse(adminUser));
+      localStorage.removeItem('df-admin-token');
+      localStorage.removeItem('df-admin-user');
+      setImpersonatingUser(null);
+      setIsAdminMode(true);
+      setActiveItem('admin_overview');
+      router.refresh();
+    }
+  };
+
+  const fetchInstances = async () => {
+    try {
+      setLoadingInstances(true);
+      const data = await fetchWithAuth('/api/v1/whatsapp/instances/');
+      setInstances(data);
+    } catch (err) {
+      console.error('Failed to fetch instances:', err);
+    } finally {
+      setLoadingInstances(false);
+    }
+  };
+
+  const fetchClientData = async () => {
+    try {
+      const logsData = await fetchWithAuth('/api/v1/whatsapp/logs/');
+      setApiLogs(logsData);
+
+      const bookingsData = await fetchWithAuth('/api/v1/whatsapp/bookings/');
+      setBookings(bookingsData);
+
+      const notifsData = await fetchWithAuth('/api/v1/whatsapp/notifications/');
+      setNotifications(notifsData);
+
+      const subData = await fetchWithAuth('/api/v1/billing/subscription/').catch(() => null);
+      setSubscription(subData);
+
+      const invData = await fetchWithAuth('/api/v1/billing/invoices/');
+      setInvoices(invData);
+
+      const pld = await fetchWithAuth('/api/v1/billing/plans/');
+      setPlans(pld);
+
+      const tck = await fetchWithAuth('/api/v1/whatsapp/tickets/');
+      setTickets(tck);
+
+      const agr = await fetchWithAuth('/api/v1/whatsapp/agreements/');
+      setAgreements(agr);
+
+      const sh = await fetchWithAuth('/api/v1/auth/sessions/');
+      setSessionLogs(sh);
+
+      const lh = await fetchWithAuth('/api/v1/auth/login-history/');
+      setLoginHistory(lh);
+      const al = await fetchWithAuth('/api/v1/auth/audit-logs/').catch(() => []);
+      setAuditLogs(al);
+    } catch (e) {
+      console.error('Failed to fetch client logs / billing:', e);
+    }
+  };
+
+  const fetchAdminData = async () => {
+    try {
+      const stats = await fetchWithAuth('/api/v1/whatsapp/admin/overview/');
+      setAdminStats(stats);
+
+      const cls = await fetchWithAuth('/api/v1/whatsapp/admin/clients/');
+      setAdminClients(cls);
+
+      const ses = await fetchWithAuth('/api/v1/whatsapp/admin/sessions/');
+      setAdminSessions(ses);
+
+      const pns = await fetchWithAuth('/api/v1/billing/plans/');
+      setAdminPlans(pns);
+
+      const sigs = await fetchWithAuth('/api/v1/whatsapp/admin/agreements/signatures/');
+      setAdminSignatures(sigs);
+    } catch (e) {
+      console.error('Failed to load admin logs:', e);
+    }
+  };
+
+  useEffect(() => {
+    if (!token && !localStorage.getItem('df-token')) {
+      router.push('/auth/login');
+      return;
+    }
+
+    if (localStorage.getItem('df-admin-token')) {
+      setImpersonatingUser(user?.email || 'Client Account');
+    }
+
+    fetchInstances();
+    fetchClientData();
+  }, [token]);
+
+  useEffect(() => {
+    if (user?.profile) {
+      setEditEmail(user.email);
+      setEditPhone(user.profile.phone_number || '');
+      setTwoFactor(user.profile.two_factor_enabled);
+      setRestrictIp(user.profile.restrict_ip_enabled);
+      setAllowedIps(user.profile.allowed_ips || '');
+      setNotifyNewLogin(user.profile.notify_new_login ?? true);
+      setNotifyPasswordChange(user.profile.notify_password_change ?? true);
+      setNotifyPackageExpiry(user.profile.notify_package_expiry ?? true);
+      setNotifyWhatsappDisconnect(user.profile.notify_whatsapp_disconnect ?? true);
+      setNotifyWebhookFailure(user.profile.notify_webhook_failure ?? true);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (isAdminMode) {
+      fetchAdminData();
+    }
+  }, [isAdminMode, activeItem]);
+
+  useEffect(() => {
+    if (selectedInstance) {
+      setBotMode(selectedInstance.bot_mode || 'off');
+      setAiPrompt(selectedInstance.ai_prompt || '');
+      setAiApiKey(selectedInstance.ai_api_key || '');
+      setAiProvider(selectedInstance.ai_provider || 'gemini');
+      setAiModel(selectedInstance.ai_model || 'gemini-2.5-flash');
+    } else {
+      setBotMode('off');
+      setAiPrompt('');
+      setAiApiKey('');
+      setAiProvider('gemini');
+      setAiModel('gemini-2.5-flash');
+    }
+  }, [selectedInstance?.id]);
+
+  useEffect(() => {
+    if (!selectedInstance || selectedInstance.instance_type !== 'web_qr') return;
+    if (selectedInstance.status !== 'qrcode' && selectedInstance.status !== 'connecting') return;
+
+    const interval = setInterval(async () => {
+      try {
+        const data = await fetchWithAuth(`/api/v1/whatsapp/instances/${selectedInstance.id}/`);
+        setSelectedInstance(data);
+        setInstances(prev => prev.map(inst => inst.id === data.id ? data : inst));
+      } catch (err) {
+        console.error('Polling error:', err);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [selectedInstance]);
+
+  const handleOpenCreateInstance = () => {
+    if (instances.length >= 3) {
+      alert(locale === 'ar' ? 'لقد تجاوزت الحد الأقصى المسموح به للأجهزة وهو 3 أرقام.' : 'You have reached the maximum device limit of 3 numbers.');
+      return;
+    }
+
+    if (agreements.length > 0) {
+      setSelectedAgreement(agreements[0]);
+      setIsAgreementModalOpen(true);
+    } else {
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleSignAgreement = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!consentName || !consentEmail || !consentPhone || !consentAccepted) {
+      alert(locale === 'ar' ? 'الرجاء ملء جميع الحقول والموافقة على الاتفاقية.' : 'Please fill all fields and accept the agreement.');
+      return;
+    }
+    try {
+      await fetchWithAuth(`/api/v1/whatsapp/agreements/${selectedAgreement.id}/sign/`, {
+        method: 'POST',
+        body: JSON.stringify({
+          full_name: consentName,
+          email: consentEmail,
+          phone_number: consentPhone
+        })
+      });
+      setIsAgreementModalOpen(false);
+      setIsModalOpen(true);
+    } catch (e) {
+      alert('Failed to sign consent agreement');
+    }
+  };
+
+  const handleCreateInstance = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newInstanceName) return;
+
+    try {
+      const payload: any = {
+        instance_name: newInstanceName,
+        instance_type: newInstanceType,
+      };
+
+      if (newInstanceType === 'meta') {
+        payload.phone_number_id = newPhoneId;
+        payload.waba_id = newWabaId;
+        payload.access_token = newAccessToken;
+      }
+
+      const newInst = await fetchWithAuth('/api/v1/whatsapp/instances/', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+
+      setInstances(prev => [...prev, newInst]);
+      setIsModalOpen(false);
+      setNewInstanceName('');
+      setNewPhoneId('');
+      setNewWabaId('');
+      setNewAccessToken('');
+
+      setSelectedInstance(newInst);
+      setWebhookUrl(newInst.webhook_url || '');
+      setWebhookEnabled(newInst.webhook_enabled);
+      setWhMsgRec(newInst.wh_message_received);
+      setWhMsgSent(newInst.wh_message_sent);
+      setWhStatChange(newInst.wh_status_changed);
+      setWhGroupJoin(newInst.wh_group_member_join);
+      setWhGroupLeave(newInst.wh_group_member_leave);
+      setWhQrUpd(newInst.wh_qr_updated);
+      setFaqRules(newInst.faq_rules || []);
+    } catch (err: any) {
+      alert(err.message || 'Failed to create WhatsApp instance');
+    }
+  };
+
+  const handleDeleteInstance = async (id: number) => {
+    if (!confirm(locale === 'ar' ? 'هل أنت متأكد من حذف هذه الجلسة نهائياً؟' : 'Are you sure you want to delete this session permanently?')) return;
+    try {
+      await fetchWithAuth(`/api/v1/whatsapp/instances/${id}/`, { method: 'DELETE' });
+      setInstances(prev => prev.filter(inst => inst.id !== id));
+      if (selectedInstance?.id === id) setSelectedInstance(null);
+    } catch (err) {
+      alert('Failed to delete session');
+    }
+  };
+
+  const handleInitSession = async () => {
+    if (!selectedInstance) return;
+    try {
+      const data = await fetchWithAuth(`/api/v1/whatsapp/instances/${selectedInstance.id}/init/`, { method: 'POST' });
+      setSelectedInstance(data);
+      setInstances(prev => prev.map(inst => inst.id === data.id ? data : inst));
+    } catch (err) {
+      alert('Failed to initialize session');
+    }
+  };
+
+  const handleLogoutSession = async () => {
+    if (!selectedInstance) return;
+    try {
+      const data = await fetchWithAuth(`/api/v1/whatsapp/instances/${selectedInstance.id}/logout/`, { method: 'POST' });
+      setSelectedInstance(data);
+      setInstances(prev => prev.map(inst => inst.id === data.id ? data : inst));
+    } catch (err) {
+      alert('Failed to log out session');
+    }
+  };
+
+  const handleSaveWebhookSettings = async (instanceId: number) => {
+    try {
+      const data = await fetchWithAuth(`/api/v1/whatsapp/instances/${instanceId}/`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          webhook_url: webhookUrl,
+          webhook_enabled: webhookEnabled,
+          wh_message_received: whMsgRec,
+          wh_message_sent: whMsgSent,
+          wh_status_changed: whStatChange,
+          wh_group_member_join: whGroupJoin,
+          wh_group_member_leave: whGroupLeave,
+          wh_qr_updated: whQrUpd
+        }),
+      });
+      setInstances(prev => prev.map(i => i.id === data.id ? data : i));
+      alert(locale === 'ar' ? 'تم حفظ إعدادات الويب هوك بنجاح' : 'Webhook configurations saved successfully');
+    } catch (e) {
+      alert('Failed to update webhooks settings');
+    }
+  };
+
+  const handleSaveBotSettings = async (instanceId: number) => {
+    try {
+      setSavingBotSettings(true);
+      const data = await fetchWithAuth(`/api/v1/whatsapp/instances/${instanceId}/`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          bot_mode: botMode,
+          ai_provider: aiProvider,
+          ai_model: aiModel,
+          ai_prompt: aiPrompt,
+          ai_api_key: aiApiKey
+        }),
+      });
+      setInstances(prev => prev.map(i => i.id === data.id ? data : i));
+      setSelectedInstance(data);
+      alert(locale === 'ar' ? 'تم حفظ إعدادات المجيب التلقائي بنجاح' : 'Auto-reply settings saved successfully');
+    } catch (e) {
+      alert('Failed to update bot settings');
+    } finally {
+      setSavingBotSettings(false);
+    }
+  };
+
+  const handleAddFaqRule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedInstance || !newKeyword || !newAnswer) return;
+    try {
+      setAddingRule(true);
+      const rule = await fetchWithAuth('/api/v1/whatsapp/faq-rules/', {
+        method: 'POST',
+        body: JSON.stringify({
+          instance: selectedInstance.id,
+          keyword: newKeyword,
+          answer: newAnswer,
+          matching_type: newMatchType,
+          action_type: newActionType,
+          action_payload: newActionPayload
+        }),
+      });
+      setFaqRules(prev => [...prev, rule]);
+      setNewKeyword('');
+      setNewAnswer('');
+      setNewActionPayload('');
+    } catch (err) {
+      alert('Failed to add rule');
+    } finally {
+      setAddingRule(false);
+    }
+  };
+
+  const handleDeleteFaqRule = async (id: number) => {
+    try {
+      await fetchWithAuth(`/api/v1/whatsapp/faq-rules/${id}/`, { method: 'DELETE' });
+      setFaqRules(prev => prev.filter(r => r.id !== id));
+    } catch (err) {
+      alert('Failed to delete rule');
+    }
+  };
+
+  const handleToggleRuleStatus = async (id: number, active: boolean) => {
+    try {
+      const updated = await fetchWithAuth(`/api/v1/whatsapp/faq-rules/${id}/`, {
+        method: 'PATCH',
+        body: JSON.stringify({ is_active: active })
+      });
+      setFaqRules(prev => prev.map(r => r.id === updated.id ? updated : r));
+    } catch (e) {
+      alert('Failed to update rule status');
+    }
+  };
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editPassword !== confirmPassword) {
+      alert(locale === 'ar' ? 'كلمة المرور غير متطابقة' : 'Passwords do not match');
+      return;
+    }
+    try {
+      await fetchWithAuth('/api/v1/auth/change-password/', {
+        method: 'POST',
+        body: JSON.stringify({
+          current_password: currentPassword,
+          new_password: editPassword
+        })
+      });
+      setCurrentPassword('');
+      setEditPassword('');
+      setConfirmPassword('');
+      alert(locale === 'ar' ? 'تم تغيير كلمة المرور بنجاح' : 'Password changed successfully');
+    } catch (e: any) {
+      alert(e.message || 'Failed to update password');
+    }
+  };
+
+  const handleChangeEmailRequest = async () => {
+    try {
+      await fetchWithAuth('/api/v1/auth/change-email/request/', {
+        method: 'POST',
+        body: JSON.stringify({ new_email: editEmail })
+      });
+      setIsEmailOtpModalOpen(true);
+    } catch (e: any) {
+      alert(e.message || 'Failed to request email change');
+    }
+  };
+
+  const handleChangeEmailVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await fetchWithAuth('/api/v1/auth/change-email/verify/', {
+        method: 'POST',
+        body: JSON.stringify({ otp: editEmailOtp })
+      });
+      setIsEmailOtpModalOpen(false);
+      setEditEmailOtp('');
+      const updated = await fetchWithAuth('/api/v1/auth/profile/');
+      setUser(updated);
+      alert(locale === 'ar' ? 'تم تغيير البريد الإلكتروني بنجاح' : 'Email changed successfully');
+    } catch (e: any) {
+      alert(e.message || 'Failed to verify email');
+    }
+  };
+
+  const handleChangePhoneRequest = async () => {
+    try {
+      await fetchWithAuth('/api/v1/auth/change-phone/request/', {
+        method: 'POST',
+        body: JSON.stringify({ new_phone: editPhone })
+      });
+      setIsPhoneOtpModalOpen(true);
+    } catch (e: any) {
+      alert(e.message || 'Failed to request phone change');
+    }
+  };
+
+  const handleChangePhoneVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await fetchWithAuth('/api/v1/auth/change-phone/verify/', {
+        method: 'POST',
+        body: JSON.stringify({ otp: editPhoneOtp })
+      });
+      setIsPhoneOtpModalOpen(false);
+      setEditPhoneOtp('');
+      const updated = await fetchWithAuth('/api/v1/auth/profile/');
+      setUser(updated);
+      alert(locale === 'ar' ? 'تم تغيير رقم الهاتف بنجاح' : 'Phone changed successfully');
+    } catch (e: any) {
+      alert(e.message || 'Failed to verify phone');
+    }
+  };
+
+
+  const handleSetup2FARequest = async () => {
+    try {
+      await fetchWithAuth('/api/v1/auth/2fa/setup/request/', {
+        method: 'POST',
+        body: JSON.stringify({ phone_number: twoFaSetupPhone || user?.phone_number })
+      });
+      setIs2faOtpSent(true);
+    } catch (e: any) {
+      alert(e.message || 'فشل إرسال كود التحقق');
+    }
+  };
+
+  const handleSetup2FAVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await fetchWithAuth('/api/v1/auth/2fa/setup/verify/', {
+        method: 'POST',
+        body: JSON.stringify({ otp: twoFaSetupOtp })
+      });
+      setIs2faModalOpen(false);
+      setIs2faOtpSent(false);
+      setTwoFactor(true);
+
+      const updated = await fetchWithAuth('/api/v1/auth/profile/');
+      setUser(updated);
+      alert(locale === 'ar' ? 'تم تفعيل المصادقة الثنائية بنجاح' : '2FA enabled successfully');
+    } catch (e: any) {
+      alert(e.message || 'فشل تفعيل المصادقة الثنائية');
+    }
+  };
+
+  const handleToggleSecurity = async (field: string, val: boolean) => {
+    try {
+      const payload: any = {};
+      if (field === '2fa') payload.two_factor_enabled = val;
+      if (field === 'ip') payload.restrict_ip_enabled = val;
+      if (field === 'notify_new_login') payload.notify_new_login = val;
+      if (field === 'notify_password_change') payload.notify_password_change = val;
+      if (field === 'notify_package_expiry') payload.notify_package_expiry = val;
+      if (field === 'notify_whatsapp_disconnect') payload.notify_whatsapp_disconnect = val;
+      if (field === 'notify_webhook_failure') payload.notify_webhook_failure = val;
+
+      const updated = await fetchWithAuth('/api/v1/auth/profile/', {
+        method: 'PATCH',
+        body: JSON.stringify(payload)
+      });
+      setUser(updated);
+      if (field !== 'notify_new_login' && field !== 'notify_password_change' && field !== 'notify_package_expiry' && field !== 'notify_whatsapp_disconnect' && field !== 'notify_webhook_failure') {
+        alert(locale === 'ar' ? 'تم حفظ التعديلات الأمنية بنجاح' : 'Security settings updated successfully');
+      }
+    } catch (e) {
+      alert('Failed to update security toggles');
+    }
+  };
+
+  const handleSaveAllowedIps = async () => {
+    try {
+      const updated = await fetchWithAuth('/api/v1/auth/profile/', {
+        method: 'PATCH',
+        body: JSON.stringify({ allowed_ips: allowedIps })
+      });
+      setUser(updated);
+      alert(locale === 'ar' ? 'تم حفظ التعديلات الأمنية بنجاح' : 'Security settings updated successfully');
+    } catch (e) {
+      alert('Failed to update allowed IPs');
+    }
+  };
+
+  const handleLogoutDevice = async (sessionId: number) => {
+    if (!confirm(locale === 'ar' ? 'هل أنت متأكد من تسجيل الخروج من هذا الجهاز؟' : 'Are you sure you want to log out from this device?')) return;
+    try {
+      await fetchWithAuth(/api/v1 / auth / sessions//logout/, { method: 'DELETE' });
+      setSessionLogs(prev => prev.filter(s => s.id !== sessionId));
+    } catch (e) {
+      alert('Failed to logout device');
+    }
+  };
+
+  const handleCreateTicket = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTicketSubject || !newTicketDesc) return;
+    try {
+      const tck = await fetchWithAuth('/api/v1/whatsapp/tickets/', {
+        method: 'POST',
+        body: JSON.stringify({
+          subject: newTicketSubject,
+          description: newTicketDesc,
+          priority: newTicketPriority
+        })
+      });
+      setTickets(prev => [tck, ...prev]);
+      setNewTicketSubject('');
+      setNewTicketDesc('');
+    } catch (e) {
+      alert('Failed to create ticket');
+    }
+  };
+
+  const handleSendTicketReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ticketReplyText || !activeTicket) return;
+    try {
+      const reply = await fetchWithAuth(`/api/v1/whatsapp/tickets/${activeTicket.id}/reply/`, {
+        method: 'POST',
+        body: JSON.stringify({ message: ticketReplyText })
+      });
+      setActiveTicket((prev: any) => ({
+        ...prev,
+        messages: [...(prev.messages || []), reply]
+      }));
+      setTicketReplyText('');
+    } catch (e) {
+      alert('Failed to send reply');
+    }
+  };
+
+  const handleSubscribePlan = async (planId: number) => {
+    if (!confirm(locale === 'ar' ? 'هل ترغب في الاشتراك بهذه الباقة؟' : 'Would you like to subscribe to this package?')) return;
+    try {
+      const res = await fetchWithAuth('/api/v1/billing/subscription/', {
+        method: 'POST',
+        body: JSON.stringify({ plan_id: planId })
+      });
+      setSubscription(res.subscription);
+      setInvoices(prev => [res.invoice, ...prev]);
+      alert(locale === 'ar' ? 'تم الاشتراك وتفعيل حسابك بنجاح!' : 'Subscribed and upgraded account successfully!');
+    } catch (e) {
+      alert('Subscription failed');
+    }
+  };
+
+  const handleTestEndpoint = async () => {
+    setPlaygroundLoading(true);
+    setPlaygroundResponse('');
+    try {
+      const activeInst = selectedInstance || (instances.length > 0 ? instances[0] : null);
+      const tokenHeader = activeInst?.api_key || 'YOUR_INSTANCE_API_KEY';
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${tokenHeader}`
+      };
+      const res = await fetch(`${API_BASE_URL}${playgroundEndpoint}`, {
+        method: 'POST',
+        headers: headers,
+        body: playgroundBody
+      });
+      const data = await res.json();
+      setPlaygroundResponse(JSON.stringify(data, null, 2));
+    } catch (e: any) {
+      setPlaygroundResponse(JSON.stringify({ error: e.message || 'Request failed' }, null, 2));
+    } finally {
+      setPlaygroundLoading(false);
+    }
+  };
+
+  const getPlaygroundSnippet = () => {
+    const activeInst = selectedInstance || (instances.length > 0 ? instances[0] : null);
+    const key = activeInst?.api_key || 'df_token_xxxxxxxxxxxxxxxxxx';
+    const bodyStr = playgroundBody.replace(/\n/g, '\n      ');
+
+    if (activeLangTab === 'python') {
+      return `import requests
+
+url = "${API_BASE_URL}${playgroundEndpoint}"
+headers = {
+    "Authorization": "Bearer ${key}",
+    "Content-Type": "application/json"
+}
+payload = ${bodyStr}
+
+response = requests.post(url, json=payload, headers=headers)
+print(response.json())`;
+    }
+    if (activeLangTab === 'javascript') {
+      return `const response = await fetch("${API_BASE_URL}${playgroundEndpoint}", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer ${key}",
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(${bodyStr})
+});
+
+const data = await response.json();
+console.log(data);`;
+    }
+    if (activeLangTab === 'php') {
+      return `<?php
+$ch = curl_init();
+curl_setopt_array($ch, [
+    CURLOPT_URL => "${API_BASE_URL}${playgroundEndpoint}",
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_POST => true,
+    CURLOPT_HTTPHEADER => [
+        "Authorization: Bearer ${key}",
+        "Content-Type: application/json"
+    ],
+    CURLOPT_POSTFIELDS => '${bodyStr.trim()}'
+]);
+
+$response = curl_exec($ch);
+curl_close($ch);
+echo $response;`;
+    }
+    return '';
+  };
+
+  const getActiveNumbersCount = () => instances.filter(i => i.status === 'connected').length;
+  const getActiveWebhooksCount = () => instances.filter(i => i.webhook_url && i.webhook_enabled).length;
+
+  const getTranslationText = (key: string, ar: string, en: string) => {
+    return locale === 'ar' ? ar : en;
+  };
+
+  const handleSuspendClient = async (id: number) => {
+    try {
+      await fetchWithAuth(`/api/v1/whatsapp/admin/clients/${id}/suspend/`, { method: 'POST' });
+      setAdminClients(prev => prev.map(c => c.id === id ? { ...c, is_active: false } : c));
+    } catch (e) {
+      alert('Failed to suspend client');
+    }
+  };
+
+  const handleActivateClient = async (id: number) => {
+    try {
+      await fetchWithAuth(`/api/v1/whatsapp/admin/clients/${id}/activate/`, { method: 'POST' });
+      setAdminClients(prev => prev.map(c => c.id === id ? { ...c, is_active: true } : c));
+    } catch (e) {
+      alert('Failed to activate client');
+    }
+  };
+
+  const handleImpersonateClient = async (client: any) => {
+    try {
+      const data = await fetchWithAuth(`/api/v1/whatsapp/admin/clients/${client.id}/login-as/`, { method: 'POST' });
+
+      localStorage.setItem('df-admin-token', token || '');
+      localStorage.setItem('df-admin-user', JSON.stringify(user));
+
+      localStorage.setItem('df-token', data.tokens.access);
+      localStorage.setItem('df-user', JSON.stringify(data.user));
+
+      setToken(data.tokens.access);
+      setUser(data.user);
+      setImpersonatingUser(client.email);
+      setIsAdminMode(false);
+      setActiveItem('overview');
+      router.refresh();
+    } catch (e) {
+      alert('Failed to impersonate client');
+    }
+  };
+
+  const handleTerminateSession = async (id: number) => {
+    try {
+      await fetchWithAuth(`/api/v1/whatsapp/admin/sessions/${id}/terminate/`, { method: 'POST' });
+      setAdminSessions(prev => prev.map(s => s.id === id ? { ...s, status: 'disconnected', qr_code: null } : s));
+    } catch (e) {
+      alert('Failed to terminate session');
+    }
+  };
+
+  const handleAddPlan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const plan = await fetchWithAuth('/api/v1/billing/plans/', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: adminPlanName,
+          price: parseFloat(adminPlanPrice),
+          duration_days: parseInt(adminPlanDays),
+          device_limit: parseInt(adminPlanDevices),
+          message_limit_per_day: parseInt(adminPlanMsgs)
+        })
+      });
+      setAdminPlans(prev => [...prev, plan]);
+      setIsPlanModalOpen(false);
+      setAdminPlanName('');
+      setAdminPlanPrice('');
+    } catch (e) {
+      alert('Failed to add plan');
+    }
+  };
+
+  const handleBroadcastAlert = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bcTitle || !bcContent) return;
+    try {
+      await fetchWithAuth('/api/v1/whatsapp/admin/notifications/', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: bcTitle,
+          content: bcContent,
+          type: bcType
+        })
+      });
+      alert('Broadcast notification sent successfully!');
+      setBcTitle('');
+      setBcContent('');
+    } catch (e) {
+      alert('Failed to broadcast message');
+    }
+  };
+
+  return (
+    <div className={styles.dashboardLayout}>
+
+      { }
+      {impersonatingUser && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          background: '#F2994A',
+          color: 'white',
+          padding: '10px 24px',
+          textAlign: 'center',
+          fontWeight: 700,
+          zIndex: 9999,
+          fontSize: '14px',
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '12px',
+          alignItems: 'center',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+        }}>
+          <span>⚠️ {locale === 'ar' ? `أنت تتصفح حساب العميل: ${impersonatingUser}` : `You are viewing client account: ${impersonatingUser}`}</span>
+          <button onClick={handleExitImpersonation} style={{
+            background: 'white',
+            border: 'none',
+            color: '#F2994A',
+            padding: '4px 12px',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontWeight: 800,
+            fontSize: '12px'
+          }}>
+            {locale === 'ar' ? 'العودة كمدير النظام' : 'Exit Impersonation'}
+          </button>
+        </div>
+      )}
+
+      { }
+      <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`} style={impersonatingUser ? { top: '44px' } : undefined}>
+        <div className={styles.sidebarHeader}>
+          <Link href="/" className={styles.sidebarLogo}>
+            <span>DarkFalcon API</span>
+          </Link>
+        </div>
+
+        <nav className={styles.sidebarNav}>
+          { }
+          {user?.is_staff && (
+            <div style={{ padding: '8px 12px' }}>
+              <button
+                onClick={() => {
+                  setIsAdminMode(!isAdminMode);
+                  setActiveItem(isAdminMode ? 'overview' : 'admin_overview');
+                }}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  borderRadius: 'var(--radius-lg)',
+                  background: 'linear-gradient(135deg, #2D9CDB, #56CCF2)',
+                  color: 'white',
+                  border: 'none',
+                  fontWeight: 700,
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(45,156,219,0.2)'
+                }}
+              >
+                {isAdminMode ? (locale === 'ar' ? '← لوحة العميل' : '← Client Panel') : (locale === 'ar' ? 'لوحة الأدمن (المدير) →' : 'Admin Dashboard →')}
+              </button>
+            </div>
+          )}
+
+          { }
+          {!isAdminMode ? (
+            sidebarItems.map(item => (
+              <button
+                key={item.key}
+                className={`${styles.sidebarItem} ${activeItem === item.key ? styles.sidebarItemActive : ''}`}
+                onClick={() => {
+                  setActiveItem(item.key);
+                  setSelectedInstance(null);
+                  setSidebarOpen(false);
+                }}
+              >
+                {iconMap[item.icon]}
+                <span>{getTranslationText(item.key, item.labelAr, item.labelEn)}</span>
+              </button>
+            ))
+          ) : (
+            adminSidebarItems.map(item => (
+              <button
+                key={item.key}
+                className={`${styles.sidebarItem} ${activeItem === item.key ? styles.sidebarItemActive : ''}`}
+                onClick={() => {
+                  setActiveItem(item.key);
+                  setSidebarOpen(false);
+                }}
+              >
+                {iconMap[item.icon]}
+                <span>{getTranslationText(item.key, item.labelAr, item.labelEn)}</span>
+              </button>
+            ))
+          )}
+        </nav>
+
+        <div className={styles.sidebarFooter}>
+          <div className={styles.sidebarPlan}>
+            <span className={styles.planLabel}>{locale === 'ar' ? 'الباقة الحالية' : 'Current Plan'}</span>
+            <span className={styles.planName}>
+              {subscription?.plan_name || (locale === 'ar' ? 'تجريبية مجانية' : '7 Days Trial')}
+            </span>
+          </div>
+
+          <button
+            className={styles.logoutBtn}
+            onClick={() => { logout(); router.push('/auth/login'); }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+            <span>{locale === 'ar' ? 'تسجيل الخروج' : 'Logout'}</span>
+          </button>
+        </div>
+      </aside>
+
+      { }
+      <main className={styles.mainContent} style={impersonatingUser ? { marginTop: '44px' } : undefined}>
+
+        { }
+        <header className={styles.topBar}>
+          <button className={styles.burgerBtn} onClick={() => setSidebarOpen(true)}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
+          </button>
+
+          <div className={styles.topBarTitle}>
+            <h1>
+              {isAdminMode ?
+                getTranslationText('', 'لوحة المدير العام للمنصة', 'DarkFalcon General Admin Controls') :
+                getTranslationText('', 'لوحة إدارة الحساب', 'Customer WhatsApp Web Dashboard')
+              }
+            </h1>
+            <p>{locale === 'ar' ? `أهلاً بك، ${user?.email}` : `Welcome back, ${user?.email}`}</p>
+          </div>
+
+          <div className={styles.topBarActions}>
+            <button className={styles.topBarIcon} onClick={toggleTheme}>
+              {theme === 'light' ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" /><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" /><line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" /><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" /></svg>
+              )}
+            </button>
+            <div className={styles.userAvatar}>
+              <span>{user?.email.charAt(0).toUpperCase()}</span>
+            </div>
+          </div>
+        </header>
+
+        { }
+        <div className={styles.dashboardContent}>
+
+          { }
+          { }
+          { }
+
+          { }
+          {activeItem === 'overview' && !isAdminMode && (
+            <>
+              { }
+              <div className={styles.statGrid}>
+                <div className={styles.statCard}>
+                  <div className={styles.statCardHeader}>
+                    <div className={styles.statCardIcon} style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>✓</div>
+                  </div>
+                  <div className={styles.statCardValue}>{getActiveNumbersCount()}</div>
+                  <div className={styles.statCardLabel}>{locale === 'ar' ? 'الأجهزة المتصلة' : 'Connected Devices'}</div>
+                </div>
+
+                <div className={styles.statCard}>
+                  <div className={styles.statCardHeader}>
+                    <div className={styles.statCardIcon} style={{ background: 'rgba(242,153,74,0.15)', color: '#F2994A' }}>ℹ</div>
+                  </div>
+                  <div className={styles.statCardValue}>{instances.length} / 3</div>
+                  <div className={styles.statCardLabel}>{locale === 'ar' ? 'الأجهزة المسجلة' : 'Registered Numbers Limit'}</div>
+                </div>
+
+                <div className={styles.statCard}>
+                  <div className={styles.statCardHeader}>
+                    <div className={styles.statCardIcon} style={{ background: 'rgba(45,156,219,0.15)', color: '#2D9CDB' }}>⚡</div>
+                  </div>
+                  <div className={styles.statCardValue}>{getActiveWebhooksCount()}</div>
+                  <div className={styles.statCardLabel}>{locale === 'ar' ? 'الـ Webhooks المفعلة' : 'Active Webhooks'}</div>
+                </div>
+
+                <div className={styles.statCard}>
+                  <div className={styles.statCardHeader}>
+                    <div className={styles.statCardIcon} style={{ background: 'rgba(155,81,224,0.15)', color: '#9B51E0' }}>📊</div>
+                  </div>
+                  <div className={styles.statCardValue}>
+                    {user?.profile?.account_type === 'professional' ? (locale === 'ar' ? 'باقة احترافية' : 'Professional Account') : (locale === 'ar' ? 'باقة تجريبية' : 'Ordinary Trial')}
+                  </div>
+                  <div className={styles.statCardLabel}>{locale === 'ar' ? 'نوع الحساب' : 'Account Tier'}</div>
+                </div>
+              </div>
+
+              { }
+              <div className={styles.contentGrid}>
+                <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+                  <h3 style={{ marginBottom: '16px', fontWeight: 700 }}>{locale === 'ar' ? 'إشعارات النظام والتحديثات' : 'System Notifications feed'}</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {notifications.length === 0 ? (
+                      <p style={{ color: 'var(--text-tertiary)', fontSize: '13px' }}>{locale === 'ar' ? 'لا توجد إشعارات جديدة.' : 'No alerts.'}</p>
+                    ) : (
+                      notifications.map(n => (
+                        <div key={n.id} style={{
+                          padding: '12px 16px',
+                          borderRadius: 'var(--radius-lg)',
+                          background: n.type === 'expiry' ? 'rgba(235,87,87,0.08)' : 'var(--bg-tertiary)',
+                          borderLeft: `4px solid ${n.type === 'expiry' ? '#EB5757' : '#2D9CDB'}`
+                        }}>
+                          <strong style={{ display: 'block', fontSize: '14px' }}>{n.title}</strong>
+                          <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{n.content}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <h3 style={{ fontWeight: 700 }}>{locale === 'ar' ? 'أيام التجربة المجانية' : 'Free Trial Days'}</h3>
+                  <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                    {locale === 'ar' ?
+                      'تمنحك منصة TrustChat فترة تجريبية مجانية لمدة 7 أيام عند التسجيل لأول مرة.' :
+                      'Every customer enjoys a 7 days trial period on first sign up.'}
+                  </div>
+                  <div style={{ fontSize: '14px', fontWeight: 700 }}>
+                    {locale === 'ar' ? `تاريخ انتهاء الفترة التجريبية: ` : `Trial end date: `}
+                    <code style={{ color: '#EB5757' }}>{user?.profile?.trial_ends_at ? new Date(user.profile.trial_ends_at).toLocaleDateString() : 'N/A'}</code>
+                  </div>
+                  <button onClick={() => setActiveItem('billing')} className="btn btn-primary">
+                    {locale === 'ar' ? 'ترقية حسابي الآن' : 'Upgrade to Professional'}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+
+          { }
+          {activeItem === 'numbers' && !isAdminMode && (
+            <div>
+              {selectedInstance ? (
+
+                <div>
+                  <button onClick={() => setSelectedInstance(null)} className="btn btn-outline btn-sm" style={{ marginBottom: '20px' }}>
+                    {locale === 'ar' ? '← العودة لقائمة الأجهزة' : '← Back to Devices List'}
+                  </button>
+
+                  <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-xl)', padding: '28px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-light)', paddingBottom: '16px', marginBottom: '20px' }}>
+                      <div>
+                        <h2 style={{ fontSize: '20px', fontWeight: 700 }}>{selectedInstance.instance_name}</h2>
+                        <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                          Token: <code>{selectedInstance.api_key}</code>
+                        </span>
+                      </div>
+
+                      <span className={styles.statusBadge} style={{
+                        background: selectedInstance.status === 'connected' ? 'var(--success-bg)' : 'rgba(242,153,74,0.1)'
+                      }}>
+                        {selectedInstance.status === 'connected' ? (locale === 'ar' ? 'متصل' : 'Connected') : (locale === 'ar' ? 'غير متصل' : 'Disconnected')}
+                      </span>
+                    </div>
+
+                    { }
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-lg)' }}>
+                        <h4>{locale === 'ar' ? 'حالة الربط والـ QR' : 'Session Connection QR'}</h4>
+
+                        {selectedInstance.status === 'qrcode' && selectedInstance.qr_code && (
+                          <div style={{ background: 'white', padding: '12px', borderRadius: '8px' }}>
+                            <img src={selectedInstance.qr_code} alt="QR Code" style={{ width: '200px', height: '200px' }} />
+                          </div>
+                        )}
+
+                        {selectedInstance.status === 'connected' && (
+                          <div style={{ color: 'var(--success)', fontSize: '48px' }}>✓</div>
+                        )}
+
+                        {selectedInstance.status === 'disconnected' && (
+                          <p style={{ color: 'var(--text-tertiary)', fontSize: '13px' }}>{locale === 'ar' ? 'الرجاء تشغيل الجلسة لمسح الـ QR.' : 'Initialize to show QR Code.'}</p>
+                        )}
+
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                          <button onClick={handleInitSession} className="btn btn-primary btn-sm">
+                            {locale === 'ar' ? 'تشغيل / تحديث QR' : 'Restart / Refresh QR'}
+                          </button>
+                          <button onClick={handleLogoutSession} className="btn btn-outline btn-error btn-sm">
+                            {locale === 'ar' ? 'تسجيل الخروج' : 'Logout Session'}
+                          </button>
+                        </div>
+                      </div>
+
+                      { }
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                        <div>
+                          <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>{locale === 'ar' ? 'رقم الواتساب المتصل:' : 'Connected WhatsApp Phone:'}</label>
+                          <input type="text" readOnly value={selectedInstance.phone_number || 'N/A'} style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+                        </div>
+
+                        <div>
+                          <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>{locale === 'ar' ? 'تاريخ الربط:' : 'Created at:'}</label>
+                          <input type="text" readOnly value={new Date(selectedInstance.created_at).toLocaleString()} style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+                        </div>
+
+                        <div style={{ marginTop: '10px' }}>
+                          <button onClick={() => handleDeleteInstance(selectedInstance.id)} className="btn btn-error" style={{ width: '100%' }}>
+                            {locale === 'ar' ? 'حذف هذا الجهاز نهائياً' : 'Delete Device Session'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+
+                <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-xl)' }}>
+                  <div className={styles.tableHeader}>
+                    <h3>{locale === 'ar' ? 'أجهزتي وقنوات الإرسال المربوطة' : 'My Connected Devices'}</h3>
+                    <button onClick={handleOpenCreateInstance} className="btn btn-primary btn-sm">
+                      {locale === 'ar' ? 'ربط جهاز جديد +' : 'Add New Number +'}
+                    </button>
+                  </div>
+
+                  <div className={styles.tableWrapper}>
+                    <table className={styles.table}>
+                      <thead>
+                        <tr>
+                          <th>{locale === 'ar' ? 'اسم الجهاز' : 'Name'}</th>
+                          <th>{locale === 'ar' ? 'رقم الواتساب' : 'WhatsApp Number'}</th>
+                          <th>{locale === 'ar' ? 'نوع الاتصال' : 'Connection Type'}</th>
+                          <th>{locale === 'ar' ? 'حالة الجلسة' : 'Status'}</th>
+                          <th>{locale === 'ar' ? 'رمز المطورين Token' : 'API Token'}</th>
+                          <th>{locale === 'ar' ? 'إجراءات' : 'Actions'}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {loadingInstances ? (
+                          <tr>
+                            <td colSpan={6} style={{ textAlign: 'center', padding: '24px' }}>{locale === 'ar' ? 'جاري تحميل الأجهزة...' : 'Loading...'}</td>
+                          </tr>
+                        ) : instances.length === 0 ? (
+                          <tr>
+                            <td colSpan={6} style={{ textAlign: 'center', padding: '36px', color: 'var(--text-tertiary)' }}>
+                              {locale === 'ar' ? 'لم تقم بربط أي جهاز بعد. اضغط على إضافة رقم للبدء!' : 'No numbers added. Click Add New Number to start!'}
+                            </td>
+                          </tr>
+                        ) : (
+                          instances.map(inst => (
+                            <tr key={inst.id}>
+                              <td style={{ fontWeight: 700 }}>
+                                <button onClick={() => {
+                                  setSelectedInstance(inst);
+                                  setWebhookUrl(inst.webhook_url || '');
+                                  setWebhookEnabled(inst.webhook_enabled);
+                                  setWhMsgRec(inst.wh_message_received);
+                                  setWhMsgSent(inst.wh_message_sent);
+                                  setWhStatChange(inst.wh_status_changed);
+                                  setWhGroupJoin(inst.wh_group_member_join);
+                                  setWhGroupLeave(inst.wh_group_member_leave);
+                                  setWhQrUpd(inst.wh_qr_updated);
+                                  setFaqRules(inst.faq_rules || []);
+                                }} style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontWeight: 800 }}>
+                                  {inst.instance_name}
+                                </button>
+                              </td>
+                              <td>{inst.phone_number || 'N/A'}</td>
+                              <td>{inst.instance_type === 'web_qr' ? 'WhatsApp Web (QR)' : 'Meta API'}</td>
+                              <td>
+                                <span className={styles.statusBadge} style={{
+                                  background: inst.status === 'connected' ? 'var(--success-bg)' : 'rgba(235,87,87,0.1)'
+                                }}>
+                                  {inst.status === 'connected' ? (locale === 'ar' ? 'متصل' : 'Connected') : (locale === 'ar' ? 'غير متصل' : 'Disconnected')}
+                                </span>
+                              </td>
+                              <td>
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                  <code style={{ fontSize: '11px' }}>{inst.api_key.substring(0, 12)}...</code>
+                                  <button onClick={() => { navigator.clipboard.writeText(inst.api_key); alert('Token Copied!'); }} className="btn btn-outline btn-xs">
+                                    {locale === 'ar' ? 'نسخ' : 'Copy'}
+                                  </button>
+                                </div>
+                              </td>
+                              <td>
+                                <div style={{ display: 'flex', gap: '6px' }}>
+                                  <button onClick={() => {
+                                    setSelectedInstance(inst);
+                                    setWebhookUrl(inst.webhook_url || '');
+                                    setWebhookEnabled(inst.webhook_enabled);
+                                    setWhMsgRec(inst.wh_message_received);
+                                    setWhMsgSent(inst.wh_message_sent);
+                                    setWhStatChange(inst.wh_status_changed);
+                                    setWhGroupJoin(inst.wh_group_member_join);
+                                    setWhGroupLeave(inst.wh_group_member_leave);
+                                    setWhQrUpd(inst.wh_qr_updated);
+                                    setFaqRules(inst.faq_rules || []);
+                                  }} className="btn btn-xs btn-outline">
+                                    {locale === 'ar' ? 'تعديل' : 'Manage'}
+                                  </button>
+                                  <button onClick={() => handleDeleteInstance(inst.id)} className="btn btn-xs btn-error">
+                                    {locale === 'ar' ? 'حذف' : 'Delete'}
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          { }
+          {activeItem === 'apiKeys' && !isAdminMode && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+                <h3 style={{ marginBottom: '14px', fontWeight: 700 }}>{locale === 'ar' ? 'مفاتيح الربط والتوثيق التلقائي للمطورين' : 'Auto API Documentation & Tokens'}</h3>
+
+                {instances.length === 0 ? (
+                  <p style={{ color: 'var(--text-tertiary)', fontSize: '13px' }}>{locale === 'ar' ? 'يرجى إضافة جهاز أولاً للحصول على مفتاح API.' : 'Please add a device to obtain an API key.'}</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {instances.map(inst => (
+                      <div key={inst.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-tertiary)', padding: '12px 18px', borderRadius: '8px' }}>
+                        <div>
+                          <strong>{inst.instance_name}</strong>
+                          <span style={{ fontSize: '12px', display: 'block', color: 'var(--text-secondary)' }}>ID: {inst.id}</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', width: '60%' }}>
+                          <input type="text" readOnly value={inst.api_key} style={{ flex: 1, padding: '8px', fontSize: '12px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px', fontFamily: 'monospace' }} />
+                          <button onClick={() => { navigator.clipboard.writeText(inst.api_key); alert('Token Copied!'); }} className="btn btn-sm btn-outline">
+                            {locale === 'ar' ? 'نسخ المفتاح' : 'Copy Token'}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              { }
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+                <h3 style={{ marginBottom: '16px', fontWeight: 700 }}>{locale === 'ar' ? 'منصة اختبار الطلبات التفاعلية (Try it Now)' : 'Interactive API playground'}</h3>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px' }}>
+                  { }
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    {instances.length > 0 && (
+                      <div>
+                        <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>{locale === 'ar' ? 'جهاز التجربة (Test WhatsApp Device):' : 'Test Device:'}</label>
+                        <select
+                          value={selectedInstance?.id || instances[0].id}
+                          onChange={(e) => {
+                            const inst = instances.find(i => i.id === Number(e.target.value));
+                            setSelectedInstance(inst || null);
+                          }}
+                          style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }}
+                        >
+                          {instances.map(inst => (
+                            <option key={inst.id} value={inst.id}>
+                              {inst.instance_name} ({inst.phone_number || 'Disconnected'})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    <div>
+                      <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>{locale === 'ar' ? 'نقطة النهاية (Endpoint):' : 'API Endpoint:'}</label>
+                      <select value={playgroundEndpoint} onChange={(e) => {
+                        setPlaygroundEndpoint(e.target.value);
+
+                        if (e.target.value.includes('text')) {
+                          setPlaygroundBody('{\n  "to": "966500000000",\n  "body": "تجربة إرسال رسالة نصية عبر المطورين"\n}');
+                        } else if (e.target.value.includes('media')) {
+                          setPlaygroundBody('{\n  "to": "966500000000",\n  "type": "image",\n  "link": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe",\n  "caption": "مرحباً بك من المطورين"\n}');
+                        } else if (e.target.value.includes('buttons')) {
+                          setPlaygroundBody('{\n  "to": "966500000000",\n  "text": "هل تفضل العرض؟",\n  "buttons": ["نعم أريد", "لا شكراً"],\n  "footer": "TrustChat API"\n}');
+                        } else if (e.target.value.includes('list')) {
+                          setPlaygroundBody('{\n  "to": "966500000000",\n  "text": "الرجاء اختيار الخدمة:",\n  "title": "خدماتنا",\n  "buttonText": "عرض القائمة",\n  "sections": [\n    {\n      "title": "القسم الأول",\n      "rows": [\n        {"rowId": "srv1", "title": "تفعيل البوت", "description": "تفعيل المجيب الذكي"},\n        {"rowId": "srv2", "title": "الدعم الفني", "description": "محادثة عميل للرد"} \n      ]\n    }\n  ]\n}');
+                        } else {
+                          setPlaygroundBody('{\n  "to": "966500000000"\n}');
+                        }
+                      }} style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }}>
+                        <option value="/api/v1/whatsapp/send/text/">Send Message (Text)</option>
+                        <option value="/api/v1/whatsapp/send/media/">Send Media (Image/Video/File/Audio)</option>
+                        <option value="/api/v1/whatsapp/send/buttons/">Send Buttons</option>
+                        <option value="/api/v1/whatsapp/send/list/">Send Lists</option>
+                        <option value="/api/v1/whatsapp/chats/">Get Chats</option>
+                        <option value="/api/v1/whatsapp/contacts/">Get Contacts</option>
+                        <option value="/api/v1/whatsapp/groups/">Get Groups</option>
+                        <option value="/api/v1/whatsapp/logout/">Logout Device Session</option>
+                        <option value="/api/v1/whatsapp/restart/">Restart Device Session</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>JSON Request Payload:</label>
+                      <textarea rows={8} value={playgroundBody} onChange={(e) => setPlaygroundBody(e.target.value)} style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px', fontFamily: 'monospace', fontSize: '13px' }} />
+                    </div>
+
+                    <button onClick={handleTestEndpoint} disabled={playgroundLoading} className="btn btn-primary" style={{ width: '100%' }}>
+                      {playgroundLoading ? '...' : (locale === 'ar' ? 'جرب الآن ⚡' : 'Try it Now ⚡')}
+                    </button>
+                  </div>
+
+                  { }
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    { }
+                    <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--border-light)', paddingBottom: '6px' }}>
+                      {['python', 'javascript', 'php'].map(lang => (
+                        <button key={lang} onClick={() => setActiveLangTab(lang)} style={{
+                          padding: '6px 12px', background: 'none', border: 'none', borderBottom: activeLangTab === lang ? '2px solid var(--primary)' : 'none',
+                          fontWeight: 700, cursor: 'pointer', color: activeLangTab === lang ? 'var(--primary)' : 'var(--text-secondary)'
+                        }}>
+                          {lang.toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
+
+                    <pre style={{ background: 'var(--bg-tertiary)', padding: '12px', borderRadius: '6px', fontSize: '12px', overflow: 'auto', maxHeight: '180px', fontFamily: 'monospace', direction: 'ltr' }}>
+                      <code>{getPlaygroundSnippet()}</code>
+                    </pre>
+
+                    <h4>JSON API Response Output:</h4>
+                    <pre style={{ background: 'black', color: '#27ae60', padding: '12px', borderRadius: '6px', fontSize: '12px', overflow: 'auto', minHeight: '130px', fontFamily: 'monospace', direction: 'ltr' }}>
+                      <code>{playgroundResponse || '{}'}</code>
+                    </pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          { }
+          {activeItem === 'webhooks' && !isAdminMode && (
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+              <h3 style={{ marginBottom: '16px', fontWeight: 700 }}>{locale === 'ar' ? 'إعدادات الويب هوك وتحديد الأحداث (Webhooks)' : 'Webhook Configuration'}</h3>
+
+              {instances.length === 0 ? (
+                <p style={{ color: 'var(--text-tertiary)', fontSize: '13px' }}>{locale === 'ar' ? 'يرجى ربط جهاز أولاً لتعديل الويب هوك.' : 'Please add a device session to manage webhooks.'}</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {instances.map(inst => (
+                    <div key={inst.id} style={{ border: '1px solid var(--border-light)', padding: '20px', borderRadius: 'var(--radius-lg)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <strong>{inst.instance_name}</strong>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <label style={{ fontSize: '13px' }}>{locale === 'ar' ? 'تفعيل الويب هوك:' : 'Webhook status:'}</label>
+                          <input type="checkbox" checked={webhookEnabled} onChange={(e) => setWebhookEnabled(e.target.checked)} />
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
+                        <input type="url" placeholder="https://yourdomain.com/webhook" value={webhookUrl} onChange={(e) => setWebhookUrl(e.target.value)} style={{ flex: 1, padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+                        <button onClick={() => handleSaveWebhookSettings(inst.id)} className="btn btn-primary">
+                          {locale === 'ar' ? 'حفظ' : 'Save'}
+                        </button>
+                      </div>
+
+                      { }
+                      <h5>{locale === 'ar' ? 'أحداث الويب هوك المفعلة:' : 'Trigger Webhook for Events:'}</h5>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '8px' }}>
+                        <label style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '13px' }}>
+                          <input type="checkbox" checked={whMsgRec} onChange={(e) => setWhMsgRec(e.target.checked)} />
+                          {locale === 'ar' ? 'استقبال رسالة' : 'Message Received'}
+                        </label>
+                        <label style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '13px' }}>
+                          <input type="checkbox" checked={whMsgSent} onChange={(e) => setWhMsgSent(e.target.checked)} />
+                          {locale === 'ar' ? 'إرسال رسالة' : 'Message Sent'}
+                        </label>
+                        <label style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '13px' }}>
+                          <input type="checkbox" checked={whStatChange} onChange={(e) => setWhStatChange(e.target.checked)} />
+                          {locale === 'ar' ? 'تغيير حالة الاتصال' : 'Connection Status Changed'}
+                        </label>
+                        <label style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '13px' }}>
+                          <input type="checkbox" checked={whGroupJoin} onChange={(e) => setWhGroupJoin(e.target.checked)} />
+                          {locale === 'ar' ? 'دخول عضو للمجموعة' : 'Member Joined Group'}
+                        </label>
+                        <label style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '13px' }}>
+                          <input type="checkbox" checked={whGroupLeave} onChange={(e) => setWhGroupLeave(e.target.checked)} />
+                          {locale === 'ar' ? 'خروج عضو من المجموعة' : 'Member Left Group'}
+                        </label>
+                        <label style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '13px' }}>
+                          <input type="checkbox" checked={whQrUpd} onChange={(e) => setWhQrUpd(e.target.checked)} />
+                          {locale === 'ar' ? 'تحديث كود الـ QR' : 'QR Updated'}
+                        </label>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          { }
+          {activeItem === 'aiRules' && !isAdminMode && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+                <h3 style={{ marginBottom: '16px', fontWeight: 700 }}>{locale === 'ar' ? 'إعدادات المجيب التلقائي الذكي والكلمات المفتاحية' : 'Smart AI & Q&A Rules Configuration'}</h3>
+
+                {instances.length === 0 ? (
+                  <p style={{ color: 'var(--text-tertiary)', fontSize: '13px' }}>{locale === 'ar' ? 'يرجى ربط جهاز أولاً لتعديل إعدادات المجيب.' : 'Please add a device session to configure auto-reply settings.'}</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+                    { }
+                    <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-light)' }}>
+                      <label style={{ fontWeight: 700, display: 'block', marginBottom: '8px', fontSize: '14px' }}>
+                        {locale === 'ar' ? 'اختر الجهاز النشط للإعداد:' : 'Select active WhatsApp device to configure:'}
+                      </label>
+                      <select
+                        value={selectedInstance?.id || ''}
+                        onChange={(e) => {
+                          const inst = instances.find(i => i.id === Number(e.target.value));
+                          setSelectedInstance(inst || null);
+                        }}
+                        style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '6px' }}
+                      >
+                        <option value="">{locale === 'ar' ? '-- اختر جهازاً --' : '-- Choose a Device --'}</option>
+                        {instances.map(inst => (
+                          <option key={inst.id} value={inst.id}>
+                            {inst.instance_name} ({inst.phone_number || 'Disconnected'})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {selectedInstance && (
+                      <>
+                        { }
+                        <div style={{ background: 'var(--bg-tertiary)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                          <h4 style={{ fontWeight: 700, fontSize: '15px' }}>{locale === 'ar' ? 'تحديد وضع الرد الآلي' : 'Set Auto-Reply Mode'}</h4>
+                          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>
+                              <input type="radio" name="bot_mode" value="off" checked={botMode === 'off'} onChange={() => setBotMode('off')} />
+                              <strong>{locale === 'ar' ? 'معطل' : 'Disabled'}</strong>
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>
+                              <input type="radio" name="bot_mode" value="ai" checked={botMode === 'ai'} onChange={() => setBotMode('ai')} />
+                              <strong>{locale === 'ar' ? 'الرد بالذكاء الاصطناعي (Multi-AI)' : 'AI Auto-Reply (Multi-AI)'}</strong>
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>
+                              <input type="radio" name="bot_mode" value="qa" checked={botMode === 'qa'} onChange={() => setBotMode('qa')} />
+                              <strong>{locale === 'ar' ? 'الرد بالكلمات المفتاحية (Q&A)' : 'Q&A Custom Rules'}</strong>
+                            </label>
+                          </div>
+
+                          <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '10px' }}>
+                            <button
+                              onClick={() => handleSaveBotSettings(selectedInstance.id)}
+                              disabled={savingBotSettings}
+                              className="btn btn-primary btn-sm"
+                            >
+                              {savingBotSettings ? '...' : (locale === 'ar' ? 'حفظ إعدادات الوضع 💾' : 'Save Mode Settings 💾')}
+                            </button>
+                          </div>
+                        </div>
+
+                        { }
+                        {botMode === 'ai' && (
+                          <div style={{ background: 'var(--bg-tertiary)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                            <h4 style={{ fontWeight: 700, fontSize: '15px' }}>{locale === 'ar' ? 'إعدادات المجيب بالذكاء الاصطناعي الذكي' : 'AI Assistant Configuration'}</h4>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                              <div>
+                                <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px', fontSize: '13px' }}>
+                                  {locale === 'ar' ? 'مزود الخدمة (AI Provider):' : 'AI Provider:'}
+                                </label>
+                                <select
+                                  value={aiProvider}
+                                  onChange={(e) => {
+                                    const provider = e.target.value;
+                                    setAiProvider(provider);
+                                    if (provider === 'gemini') setAiModel('gemini-2.5-flash');
+                                    else if (provider === 'openai') setAiModel('gpt-4o-mini');
+                                    else if (provider === 'claude') setAiModel('claude-3-5-sonnet-latest');
+                                    else if (provider === 'deepseek') setAiModel('deepseek-chat');
+                                    else if (provider === 'groq') setAiModel('llama-3.3-70b-versatile');
+                                  }}
+                                  style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px', fontSize: '13px', color: 'var(--text-primary)' }}
+                                >
+                                  <option value="gemini">Google Gemini</option>
+                                  <option value="openai">OpenAI</option>
+                                  <option value="claude">Anthropic Claude</option>
+                                  <option value="deepseek">DeepSeek AI</option>
+                                  <option value="groq">Groq (Llama)</option>
+                                </select>
+                              </div>
+
+                              <div>
+                                <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px', fontSize: '13px' }}>
+                                  {locale === 'ar' ? 'نموذج الذكاء الاصطناعي (AI Model):' : 'AI Model:'}
+                                </label>
+                                <input
+                                  type="text"
+                                  value={aiModel}
+                                  onChange={(e) => setAiModel(e.target.value)}
+                                  placeholder="model-name"
+                                  style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px', fontSize: '13px', color: 'var(--text-primary)' }}
+                                />
+                                <small style={{ color: 'var(--text-tertiary)', fontSize: '11px', display: 'block', marginTop: '4px' }}>
+                                  {locale === 'ar' ? 'اسم النموذج الافتراضي أو اكتب أي نموذج آخر.' : 'Default model name or type any other.'}
+                                </small>
+                              </div>
+                            </div>
+
+                            <div>
+                              <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px', fontSize: '13px' }}>
+                                {locale === 'ar' ? `${aiProvider.toUpperCase()} مفتاح واجهة التطبيق (API Key):` : `${aiProvider.toUpperCase()} API Key:`}
+                              </label>
+                              <input
+                                type="password"
+                                placeholder={
+                                  aiProvider === 'gemini' ? 'AIzaSy...' :
+                                    aiProvider === 'openai' ? 'sk-proj-...' :
+                                      aiProvider === 'claude' ? 'sk-ant-...' :
+                                        aiProvider === 'groq' ? 'gsk_...' : 'sk-...'
+                                }
+                                value={aiApiKey}
+                                onChange={(e) => setAiApiKey(e.target.value)}
+                                style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px', fontFamily: 'monospace' }}
+                              />
+                              <small style={{ color: 'var(--text-tertiary)', fontSize: '11px', display: 'block', marginTop: '4px' }}>
+                                {locale === 'ar'
+                                  ? `سيتم استخدام هذا المفتاح للاتصال بـ ${aiProvider.toUpperCase()} نموذج ${aiModel}.`
+                                  : `This key will connect to ${aiProvider.toUpperCase()} model ${aiModel}.`
+                                }
+                              </small>
+                            </div>
+
+                            <div>
+                              <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px', fontSize: '13px' }}>
+                                {locale === 'ar' ? 'معلومات وتعليمات العمل (AI Prompt / Business context):' : 'Business Information & Custom Prompt Instruction:'}
+                              </label>
+                              <textarea
+                                rows={6}
+                                placeholder={locale === 'ar' ? 'اكتب هنا تفاصيل عملك، أسعار الخدمات، أوقات العمل، طريقة التواصل، لكي يجيب المساعد الذكي بدقة...' : 'Write here details about your business, service costs, working hours, contact info, so the bot answers accurately...'}
+                                value={aiPrompt}
+                                onChange={(e) => setAiPrompt(e.target.value)}
+                                style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px', fontSize: '13px' }}
+                              />
+                            </div>
+
+                            <button
+                              onClick={() => handleSaveBotSettings(selectedInstance.id)}
+                              disabled={savingBotSettings}
+                              className="btn btn-primary"
+                              style={{ alignSelf: 'flex-start' }}
+                            >
+                              {savingBotSettings ? '...' : (locale === 'ar' ? 'حفظ إعدادات الذكاء الاصطناعي ⚡' : 'Save AI Configurations ⚡')}
+                            </button>
+                          </div>
+                        )}
+
+                        { }
+                        {botMode === 'qa' && (
+                          <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '20px' }}>
+                            <h4 style={{ fontWeight: 700, fontSize: '16px', marginBottom: '14px' }}>{locale === 'ar' ? 'بناء قواعد الكلمات المفتاحية المتطابقة' : 'Keyword Matching Q&A Rules Builder'}</h4>
+
+                            { }
+                            <form onSubmit={handleAddFaqRule} style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr) auto', gap: '8px', alignItems: 'end', background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '20px' }}>
+                              <div>
+                                <label style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>{locale === 'ar' ? 'الكلمة/السؤال:' : 'Keyword:'}</label>
+                                <input type="text" required value={newKeyword} onChange={(e) => setNewKeyword(e.target.value)} placeholder="سعر، موقع" style={{ width: '100%', padding: '8px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+                              </div>
+                              <div>
+                                <label style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>{locale === 'ar' ? 'شرط المطابقة:' : 'Condition:'}</label>
+                                <select value={newMatchType} onChange={(e) => setNewMatchType(e.target.value)} style={{ width: '100%', padding: '8px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }}>
+                                  <option value="exact">{locale === 'ar' ? 'مطابقة كاملة' : 'Exact Match'}</option>
+                                  <option value="contains">{locale === 'ar' ? 'يحتوي على النص' : 'Contains Keyword'}</option>
+                                  <option value="starts_with">{locale === 'ar' ? 'يبدأ بـ' : 'Starts With'}</option>
+                                  <option value="ends_with">{locale === 'ar' ? 'ينتهي بـ' : 'Ends With'}</option>
+                                  <option value="regex">Regex Expression</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>{locale === 'ar' ? 'الإجراء:' : 'Action:'}</label>
+                                <select value={newActionType} onChange={(e) => setNewActionType(e.target.value)} style={{ width: '100%', padding: '8px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }}>
+                                  <option value="text">{locale === 'ar' ? 'إرسال نص' : 'Send Text'}</option>
+                                  <option value="image">{locale === 'ar' ? 'إرسال صورة' : 'Send Image'}</option>
+                                  <option value="file">{locale === 'ar' ? 'إرسال ملف' : 'Send File'}</option>
+                                  <option value="buttons">{locale === 'ar' ? 'إرسال أزرار خيارات' : 'Send Buttons'}</option>
+                                  <option value="list">{locale === 'ar' ? 'إرسال قائمة' : 'Send List'}</option>
+                                  <option value="handover">{locale === 'ar' ? 'تحويل للموظف المختص' : 'Handover to Agent'}</option>
+                                </select>
+                              </div>
+                              <div style={{ gridColumn: 'span 2' }}>
+                                <label style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>{locale === 'ar' ? 'الرد / رابط المرفق أو خيارات الأزرار JSON:' : 'Response / Action Payload metadata:'}</label>
+                                <input type="text" required value={newAnswer} onChange={(e) => setNewAnswer(e.target.value)} placeholder="الرد التلقائي المرسل للعميل" style={{ width: '100%', padding: '8px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+                              </div>
+                              <button type="submit" disabled={addingRule} className="btn btn-primary" style={{ height: '38px', padding: '0 20px' }}>
+                                {locale === 'ar' ? 'إضافة' : 'Add'}
+                              </button>
+                            </form>
+
+                            { }
+                            <table className={styles.table}>
+                              <thead>
+                                <tr>
+                                  <th>{locale === 'ar' ? 'الكلمة المفتاحية' : 'Keyword'}</th>
+                                  <th>{locale === 'ar' ? 'الشرط' : 'Condition'}</th>
+                                  <th>{locale === 'ar' ? 'نوع الإجراء' : 'Action'}</th>
+                                  <th>{locale === 'ar' ? 'الرد / المحتوى' : 'Response'}</th>
+                                  <th>{locale === 'ar' ? 'حالة التفعيل' : 'Active'}</th>
+                                  <th>{locale === 'ar' ? 'إجراء' : 'Action'}</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {faqRules.length === 0 ? (
+                                  <tr>
+                                    <td colSpan={6} style={{ textAlign: 'center', padding: '16px', color: 'var(--text-tertiary)' }}>{locale === 'ar' ? 'لا توجد قواعد مضافة بعد.' : 'No FAQ rules.'}</td>
+                                  </tr>
+                                ) : (
+                                  faqRules.map(rule => (
+                                    <tr key={rule.id}>
+                                      <td><code>{rule.keyword}</code></td>
+                                      <td>{rule.matching_type}</td>
+                                      <td>{rule.action_type}</td>
+                                      <td>{rule.answer}</td>
+                                      <td>
+                                        <input type="checkbox" checked={rule.is_active} onChange={(e) => handleToggleRuleStatus(rule.id, e.target.checked)} />
+                                      </td>
+                                      <td>
+                                        <button onClick={() => handleDeleteFaqRule(rule.id)} className="btn btn-xs btn-error">
+                                          {locale === 'ar' ? 'حذف' : 'Delete'}
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  ))
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          { }
+          {activeItem === 'chatbot' && !isAdminMode && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+              { }
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+                <h3 style={{ marginBottom: '14px', fontWeight: 700 }}>{locale === 'ar' ? 'سجل الحجوزات المسجلة عبر الشات بوت (نظام الحجوزات)' : 'Chatbot Booking Registrations Log'}</h3>
+
+                {instances.length === 0 ? (
+                  <p style={{ color: 'var(--text-tertiary)', fontSize: '13px' }}>{locale === 'ar' ? 'يرجى ربط جهاز أولاً لعرض الحجوزات.' : 'Please add a device session to view booking registrations.'}</p>
+                ) : (
+                  <div>
+                    { }
+                    <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-light)', marginBottom: '20px' }}>
+                      <label style={{ fontWeight: 700, display: 'block', marginBottom: '8px', fontSize: '14px' }}>
+                        {locale === 'ar' ? 'اختر الجهاز لعرض حجوزاته المخصصة:' : 'Select WhatsApp device to filter bookings:'}
+                      </label>
+                      <select
+                        value={selectedInstance?.id || ''}
+                        onChange={(e) => {
+                          const inst = instances.find(i => i.id === Number(e.target.value));
+                          setSelectedInstance(inst || null);
+                        }}
+                        style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '6px' }}
+                      >
+                        <option value="">{locale === 'ar' ? '-- كل الأجهزة --' : '-- All Devices --'}</option>
+                        {instances.map(inst => (
+                          <option key={inst.id} value={inst.id}>
+                            {inst.instance_name} ({inst.phone_number || 'Disconnected'})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className={styles.tableWrapper}>
+                      <table className={styles.table}>
+                        <thead>
+                          <tr>
+                            <th>{locale === 'ar' ? 'رقم العميل' : 'Customer Phone'}</th>
+                            <th>{locale === 'ar' ? 'الاسم' : 'Name'}</th>
+                            <th>{locale === 'ar' ? 'رقم الجوال' : 'Phone'}</th>
+                            <th>{locale === 'ar' ? 'العنوان' : 'Address'}</th>
+                            <th>{locale === 'ar' ? 'العمر' : 'Age'}</th>
+                            <th>{locale === 'ar' ? 'حالة الحجز' : 'Status'}</th>
+                            <th>{locale === 'ar' ? 'تاريخ التسجيل' : 'Date'}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {bookings.filter(b => !selectedInstance || b.instance === selectedInstance.id).length === 0 ? (
+                            <tr>
+                              <td colSpan={7} style={{ textAlign: 'center', padding: '20px', color: 'var(--text-tertiary)' }}>{locale === 'ar' ? 'لا توجد حجوزات مسجلة حالياً.' : 'No booking records found.'}</td>
+                            </tr>
+                          ) : (
+                            bookings.filter(b => !selectedInstance || b.instance === selectedInstance.id).map(b => (
+                              <tr key={b.id}>
+                                <td>{b.customer_phone}</td>
+                                <td>{b.name || '-'}</td>
+                                <td>{b.phone || '-'}</td>
+                                <td>{b.address || '-'}</td>
+                                <td>{b.age || '-'}</td>
+                                <td>
+                                  <span className={styles.statusBadge} style={{
+                                    background: b.status === 'completed' ? 'var(--success-bg)' : 'rgba(242,153,74,0.1)'
+                                  }}>
+                                    {b.status}
+                                  </span>
+                                </td>
+                                <td>{new Date(b.created_at).toLocaleString()}</td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          { }
+          {activeItem === 'logs' && !isAdminMode && (
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+              <h3 style={{ marginBottom: '16px', fontWeight: 700 }}>{locale === 'ar' ? 'سجل عمليات الـ API وتوثيق الاستخدام' : 'API Operations Audit Logs'}</h3>
+
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                <input type="text" placeholder={locale === 'ar' ? 'بحث باسم الطريقة أو رابط الـ endpoint...' : 'Search logs by endpoint or status...'} value={logSearchQuery} onChange={(e) => setLogSearchQuery(e.target.value)} style={{ flex: 1, padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+              </div>
+
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>{locale === 'ar' ? 'الجهاز' : 'Device'}</th>
+                      <th>{locale === 'ar' ? 'العملية (Method)' : 'Method'}</th>
+                      <th>{locale === 'ar' ? 'الـ Endpoint' : 'Endpoint'}</th>
+                      <th>{locale === 'ar' ? 'الحالة (Status)' : 'Status'}</th>
+                      <th>{locale === 'ar' ? 'النتيجة (Outcome)' : 'Outcome'}</th>
+                      <th>{locale === 'ar' ? 'عنوان الـ IP' : 'IP Location'}</th>
+                      <th>{locale === 'ar' ? 'الوقت والتاريخ' : 'Timestamp'}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {apiLogs.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} style={{ textAlign: 'center', padding: '20px', color: 'var(--text-tertiary)' }}>{locale === 'ar' ? 'لا يوجد سجلات عمليات لعرضها.' : 'No audit logs.'}</td>
+                      </tr>
+                    ) : (
+                      apiLogs.filter(log => log.endpoint.toLowerCase().includes(logSearchQuery.toLowerCase()) || log.method.toLowerCase().includes(logSearchQuery.toLowerCase()))
+                        .map(log => (
+                          <tr key={log.id}>
+                            <td>{log.instance_name || 'System/User'}</td>
+                            <td><strong style={{ color: '#27ae60' }}>{log.method}</strong></td>
+                            <td><code>{log.endpoint}</code></td>
+                            <td>
+                              <span style={{
+                                padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 700,
+                                background: log.status_code >= 400 ? 'rgba(235,87,87,0.1)' : 'var(--success-bg)',
+                                color: log.status_code >= 400 ? '#EB5757' : '#27ae60'
+                              }}>
+                                {log.status_code}
+                              </span>
+                            </td>
+                            <td>{log.outcome}</td>
+                            <td>{log.ip_address}</td>
+                            <td>{new Date(log.created_at).toLocaleString()}</td>
+                          </tr>
+                        ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          { }
+          {activeItem === 'billing' && !isAdminMode && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+              { }
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+                <h3 style={{ marginBottom: '16px', fontWeight: 700 }}>{locale === 'ar' ? 'تفعيل باقات واشتراكات المنصة' : 'Select Subscription Package'}</h3>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+                  {plans.length === 0 ? (
+                    <p>{locale === 'ar' ? 'لا توجد باقات مفعلة حالياً.' : 'No plans configured.'}</p>
+                  ) : (
+                    plans.map(p => (
+                      <div key={p.id} style={{
+                        border: '1px solid var(--border-light)', padding: '24px', borderRadius: '12px',
+                        background: 'var(--bg-tertiary)', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '12px'
+                      }}>
+                        <h4 style={{ fontSize: '18px', fontWeight: 700 }}>{p.name}</h4>
+                        <div style={{ fontSize: '28px', fontWeight: 900, color: 'var(--primary)' }}>{p.price} SAR</div>
+                        <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>{p.duration_days} {locale === 'ar' ? 'يوم' : 'Days'}</span>
+
+                        <div style={{ fontSize: '13px', textAlign: 'start', margin: '10px 0', borderTop: '1px solid var(--border-light)', paddingTop: '10px' }}>
+                          <div>• {locale === 'ar' ? `حد الأجهزة: ${p.device_limit}` : `Device Limit: ${p.device_limit}`}</div>
+                          <div>• {locale === 'ar' ? `الرسائل اليومية: ${p.message_limit_per_day}` : `Daily Messages: ${p.message_limit_per_day}`}</div>
+                        </div>
+
+                        <button onClick={() => handleSubscribePlan(p.id)} className="btn btn-primary btn-sm" style={{ marginTop: 'auto' }}>
+                          {locale === 'ar' ? 'ترقية وتفعيل الآن' : 'Subscribe Now'}
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              { }
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+                <h3 style={{ marginBottom: '14px', fontWeight: 700 }}>{locale === 'ar' ? 'سجل الفواتير السابقة' : 'Billing Transactions Invoices'}</h3>
+                <div className={styles.tableWrapper}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>{locale === 'ar' ? 'المبلغ المدفوع' : 'Amount'}</th>
+                        <th>{locale === 'ar' ? 'حالة الدفع' : 'Status'}</th>
+                        <th>{locale === 'ar' ? 'التاريخ' : 'Date'}</th>
+                        <th>{locale === 'ar' ? 'تحميل الفاتورة' : 'Action'}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {invoices.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} style={{ textAlign: 'center', padding: '20px', color: 'var(--text-tertiary)' }}>{locale === 'ar' ? 'لا يوجد فواتير مدفوعة.' : 'No invoices.'}</td>
+                        </tr>
+                      ) : (
+                        invoices.map(inv => (
+                          <tr key={inv.id}>
+                            <td>#{inv.id}</td>
+                            <td><strong>{inv.amount} SAR</strong></td>
+                            <td>
+                              <span className={styles.statusBadge} style={{ background: 'var(--success-bg)', color: '#27ae60' }}>
+                                {inv.status}
+                              </span>
+                            </td>
+                            <td>{new Date(inv.created_at).toLocaleString()}</td>
+                            <td>
+                              <a href={`${API_BASE_URL}/api/v1/billing/invoices/${inv.id}/download/`} download className="btn btn-xs btn-outline">
+                                {locale === 'ar' ? 'تحميل فاتورة PDF' : 'Download Invoice PDF'}
+                              </a>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          { }
+          {activeItem === 'settings' && !isAdminMode && (
+            <div className={styles.settingsGrid}>
+              { }
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <h3 style={{ fontWeight: 700 }}>{locale === 'ar' ? 'تعديل البريد الإلكتروني وكلمة المرور' : 'Modify Credentials'}</h3>
+
+                <form onSubmit={handleUpdateProfile} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div>
+                    <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>{locale === 'ar' ? 'البريد الإلكتروني:' : 'Email address:'}</label>
+                    <input type="email" required value={editEmail} onChange={(e) => setEditEmail(e.target.value)} style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+                  </div>
+                  <div>
+                    <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>{locale === 'ar' ? 'كلمة مرور جديدة (اتركها فارغة إذا لم تكن ترغب بالتعديل):' : 'New Password:'}</label>
+                    <input type="password" autoComplete="new-password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} placeholder="******" style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+                  </div>
+                  <button type="submit" className="btn btn-primary">
+                    {locale === 'ar' ? 'تعديل البيانات' : 'Update Credentials'}
+                  </button>
+                </form>
+
+                <h3 style={{ fontWeight: 700, marginTop: '20px' }}>{locale === 'ar' ? 'إعدادات الحماية والأمان الإضافية' : 'Extra Security Parameters'}</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-tertiary)', padding: '12px', borderRadius: '6px' }}>
+                    <span>{locale === 'ar' ? 'تفعيل المصادقة الثنائية (2FA)' : 'Enable Two-Factor Authentication'}</span>
+                    <input type="checkbox" checked={twoFactor} onChange={(e) => {
+                      if (e.target.checked) {
+                        setIs2faModalOpen(true);
+                        setTwoFaSetupPhone(user?.phone_number || '');
+                        setIs2faOtpSent(false);
+                        setTwoFaSetupOtp('');
+                      } else {
+                        setTwoFactor(false);
+                        handleToggleSecurity('2fa', false);
+                      }
+                    }} />
+                  </label>
+
+                  <div style={{ background: 'var(--bg-tertiary)', padding: '12px', borderRadius: '6px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>{locale === 'ar' ? 'تفعيل تسجيل الدخول بخطوتين' : 'Enable Two-step passcode'}</span>
+                      <input type="checkbox" checked={twoStepEnabled} onChange={(e) => { setTwoStepEnabled(e.target.checked); handleToggleSecurity('2step', e.target.checked); }} />
+                    </div>
+                    {twoStepEnabled && (
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                        <input type="password" placeholder={locale === 'ar' ? 'الرمز السري بخطوتين...' : 'Enter 2-step password...'} value={twoStepPassword} onChange={(e) => setTwoStepPassword(e.target.value)} style={{ flex: 1, padding: '8px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+                        <button onClick={() => handleToggleSecurity('2step', true)} className="btn btn-primary btn-sm">
+                          {locale === 'ar' ? 'حفظ الرمز' : 'Save Passcode'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-tertiary)', padding: '12px', borderRadius: '6px' }}>
+                    <span>{locale === 'ar' ? 'تقييد ومنع الدخول من عناوين IP إضافية' : 'Restrict Login to Authorized IP only'}</span>
+                    <input type="checkbox" checked={restrictIp} onChange={(e) => { setRestrictIp(e.target.checked); handleToggleSecurity('ip', e.target.checked); }} />
+                  </label>
+                </div>
+              </div>
+
+              { }
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <h3 style={{ fontWeight: 700 }}>{locale === 'ar' ? 'الأجهزة النشطة وسجل الدخول' : 'Active Sessions & Login Logs'}</h3>
+
+                <h5>{locale === 'ar' ? 'الجلسات المسجلة حالياً:' : 'Active Registered Sessions:'}</h5>
+                <div style={{ maxHeight: '180px', overflow: 'auto', border: '1px solid var(--border-light)', borderRadius: '6px' }}>
+                  <table className={styles.table} style={{ fontSize: '12px' }}>
+                    <tbody>
+                      {sessionLogs.map(s => (
+                        <tr key={s.id}>
+                          <td>{s.ip_address}</td>
+                          <td>{s.browser_agent ? s.browser_agent.substring(0, 30) : '-'}...</td>
+                          <td>{new Date(s.created_at).toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <h5>{locale === 'ar' ? 'سجل محاولات الدخول:' : 'Login history Log:'}</h5>
+                <div style={{ maxHeight: '180px', overflow: 'auto', border: '1px solid var(--border-light)', borderRadius: '6px' }}>
+                  <table className={styles.table} style={{ fontSize: '12px' }}>
+                    <tbody>
+                      {loginHistory.map(lh => (
+                        <tr key={lh.id}>
+                          <td>{lh.ip_address}</td>
+                          <td>
+                            <span style={{ color: lh.status === 'success' ? '#27ae60' : '#eb5757' }}>
+                              {lh.status}
+                            </span>
+                          </td>
+                          <td>{new Date(lh.created_at).toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          { }
+          {activeItem === 'profile' && !isAdminMode && (
+            <div className={styles.profileGrid}>
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <h3 style={{ fontWeight: 700 }}>{locale === 'ar' ? 'معلومات الحساب والاشتراك' : 'User Account Information'}</h3>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '12px', fontSize: '14px' }}>
+                  <strong>{locale === 'ar' ? 'الاسم بالكامل:' : 'Full name:'}</strong>
+                  <span>{user?.profile?.full_name || 'N/A'}</span>
+
+                  <strong>{locale === 'ar' ? 'نوع الحساب:' : 'Account Type:'}</strong>
+                  <span style={{ fontWeight: 700, color: 'var(--primary)' }}>
+                    {user?.profile?.account_type === 'professional' ? (locale === 'ar' ? 'حساب احترافي (Professional)' : 'Professional Account') : (locale === 'ar' ? 'حساب عادي (Ordinary)' : 'Ordinary Trial Account')}
+                  </span>
+
+                  <strong>{locale === 'ar' ? 'الحالة:' : 'Status:'}</strong>
+                  <span>{user?.is_active ? (locale === 'ar' ? 'نشط' : 'Active') : (locale === 'ar' ? 'معطل' : 'Suspended')}</span>
+                </div>
+              </div>
+
+              { }
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <h3 style={{ fontWeight: 700 }}>{locale === 'ar' ? 'تواصل معنا (الدعم الفني)' : 'Contact Us / Platform Support'}</h3>
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                  {locale === 'ar' ?
+                    'يسعدنا دائماً تواصلك معنا لحل أي مشكلة أو للاستفسار عن خدمات باقات TrustChat.' :
+                    'We are always glad to assist you. Contact us via any channel below:'}
+                </p>
+
+                <div className={styles.contactGrid}>
+                  <a href="https://wa.me/966500000000" target="_blank" className="btn btn-outline" style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                    <span>واتساب / WhatsApp</span>
+                  </a>
+                  <a href="https://t.me/trustchat" target="_blank" className="btn btn-outline" style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                    <span>تليجرام / Telegram</span>
+                  </a>
+                  <a href="mailto:support@trustchat.com" className="btn btn-outline" style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                    <span>الإيميل / Email</span>
+                  </a>
+                  <a href="https://instagram.com/trustchat" target="_blank" className="btn btn-outline" style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                    <span>انستغرام / Instagram</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+
+          { }
+          { }
+          { }
+
+          { }
+          {activeItem === 'admin_overview' && isAdminMode && (
+            <>
+              { }
+              <div className={styles.statGrid}>
+                <div className={styles.statCard}>
+                  <div className={styles.statCardValue}>{adminStats?.clients_count || 0}</div>
+                  <div className={styles.statCardLabel}>{locale === 'ar' ? 'إجمالي العملاء' : 'Total Registered Clients'}</div>
+                </div>
+                <div className={styles.statCard}>
+                  <div className={styles.statCardValue}>{adminStats?.active_sessions || 0}</div>
+                  <div className={styles.statCardLabel}>{locale === 'ar' ? 'الجلسات النشطة بالواتساب' : 'Active WhatsApp Sessions'}</div>
+                </div>
+                <div className={styles.statCard}>
+                  <div className={styles.statCardValue}>{adminStats?.sent_messages_today || 0}</div>
+                  <div className={styles.statCardLabel}>{locale === 'ar' ? 'الرسائل المرسلة اليوم' : 'Sent Messages Today'}</div>
+                </div>
+                <div className={styles.statCard}>
+                  <div className={styles.statCardValue}>{adminStats?.monthly_revenue || 0} SAR</div>
+                  <div className={styles.statCardLabel}>{locale === 'ar' ? 'إيرادات الشهر الحالي' : 'Monthly Revenue'}</div>
+                </div>
+              </div>
+
+              { }
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+                <h3 style={{ marginBottom: '14px', fontWeight: 700 }}>{locale === 'ar' ? 'تنبيهات المسؤول المباشر' : 'General Platform Stats summary'}</h3>
+                <div className={styles.flexResponsive}>
+                  <div style={{ flex: 1, padding: '16px', borderRadius: '8px', background: 'var(--bg-tertiary)' }}>
+                    <strong>{locale === 'ar' ? 'العملاء الجدد اليوم:' : 'New Clients Signed Today:'}</strong>
+                    <span style={{ fontSize: '20px', fontWeight: 900, display: 'block', color: 'var(--primary)' }}>{adminStats?.new_clients || 0}</span>
+                  </div>
+                  <div style={{ flex: 1, padding: '16px', borderRadius: '8px', background: 'var(--bg-tertiary)' }}>
+                    <strong>{locale === 'ar' ? 'التذاكر المفتوحة والمعلقة:' : 'Open support tickets:'}</strong>
+                    <span style={{ fontSize: '20px', fontWeight: 900, display: 'block', color: '#eb5757' }}>{adminStats?.open_tickets || 0}</span>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          { }
+          {activeItem === 'admin_clients' && isAdminMode && (
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+              <h3 style={{ marginBottom: '16px', fontWeight: 700 }}>{locale === 'ar' ? 'إدارة حسابات العملاء المسجلين بالمنصة' : 'Client Accounts Manager'}</h3>
+
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Email</th>
+                      <th>{locale === 'ar' ? 'الاسم' : 'Name'}</th>
+                      <th>{locale === 'ar' ? 'تاريخ التسجيل' : 'Registered Date'}</th>
+                      <th>{locale === 'ar' ? 'نوع الحساب' : 'Type'}</th>
+                      <th>{locale === 'ar' ? 'الحالة' : 'Status'}</th>
+                      <th>{locale === 'ar' ? 'إجراءات الإشراف' : 'Actions'}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {adminClients.map(c => (
+                      <tr key={c.id}>
+                        <td>{c.email}</td>
+                        <td>{c.profile?.full_name || 'N/A'}</td>
+                        <td>{new Date(c.date_joined).toLocaleDateString()}</td>
+                        <td>{c.profile?.account_type}</td>
+                        <td>
+                          <span style={{ color: c.is_active ? '#27ae60' : '#eb5757', fontWeight: 700 }}>
+                            {c.is_active ? 'Active' : 'Suspended'}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button onClick={() => handleImpersonateClient(c)} className="btn btn-xs btn-outline">
+                              {locale === 'ar' ? 'دخول كعميل' : 'Login as Client'}
+                            </button>
+                            {c.is_active ? (
+                              <button onClick={() => handleSuspendClient(c.id)} className="btn btn-xs btn-error">
+                                {locale === 'ar' ? 'تعليق الحساب' : 'Suspend'}
+                              </button>
+                            ) : (
+                              <button onClick={() => handleActivateClient(c.id)} className="btn btn-xs btn-primary">
+                                {locale === 'ar' ? 'تنشيط' : 'Activate'}
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          { }
+          {activeItem === 'admin_sessions' && isAdminMode && (
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+              <h3 style={{ marginBottom: '16px', fontWeight: 700 }}>{locale === 'ar' ? 'إدارة كافة جلسات الواتساب النشطة بالسيستم' : 'Active WhatsApp Gateway Sessions Tracker'}</h3>
+
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>{locale === 'ar' ? 'اسم الجلسة' : 'Instance Name'}</th>
+                      <th>{locale === 'ar' ? 'رقم الواتساب' : 'Connected Number'}</th>
+                      <th>{locale === 'ar' ? 'العميل' : 'Owner'}</th>
+                      <th>{locale === 'ar' ? 'النوع' : 'Type'}</th>
+                      <th>{locale === 'ar' ? 'الحالة' : 'Status'}</th>
+                      <th>{locale === 'ar' ? 'إنهاء الجلسة' : 'Action'}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {adminSessions.map(s => (
+                      <tr key={s.id}>
+                        <td>#{s.id}</td>
+                        <td>{s.instance_name}</td>
+                        <td>{s.phone_number || '-'}</td>
+                        <td>{s.user || 'Unknown'}</td>
+                        <td>{s.instance_type}</td>
+                        <td>{s.status}</td>
+                        <td>
+                          <button onClick={() => handleTerminateSession(s.id)} className="btn btn-xs btn-error">
+                            {locale === 'ar' ? 'إنهاء الاتصال' : 'Terminate Connection'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          { }
+          {activeItem === 'admin_plans' && isAdminMode && (
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+              <div className={styles.tableHeader}>
+                <h3>{locale === 'ar' ? 'إدارة الباقات والأسعار والاشتراكات' : 'Plans Configuration Manager'}</h3>
+                <button onClick={() => setIsPlanModalOpen(true)} className="btn btn-primary btn-sm">
+                  {locale === 'ar' ? 'إنشاء باقة جديدة +' : 'Create New Plan +'}
+                </button>
+              </div>
+
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>{locale === 'ar' ? 'اسم الباقة' : 'Plan Name'}</th>
+                      <th>{locale === 'ar' ? 'السعر' : 'Price'}</th>
+                      <th>{locale === 'ar' ? 'المدة باليوم' : 'Duration (Days)'}</th>
+                      <th>{locale === 'ar' ? 'حد الأجهزة' : 'Devices Limit'}</th>
+                      <th>{locale === 'ar' ? 'الحد اليومي للرسائل' : 'Daily Limit'}</th>
+                      <th>{locale === 'ar' ? 'الحالة' : 'Status'}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {adminPlans.map(p => (
+                      <tr key={p.id}>
+                        <td style={{ fontWeight: 700 }}>{p.name}</td>
+                        <td><strong>{p.price} SAR</strong></td>
+                        <td>{p.duration_days} days</td>
+                        <td>{p.device_limit}</td>
+                        <td>{p.message_limit_per_day}</td>
+                        <td>{p.is_active ? 'Active' : 'Inactive'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          { }
+          {activeItem === 'admin_payments' && isAdminMode && (
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+              <h3 style={{ marginBottom: '16px', fontWeight: 700 }}>{locale === 'ar' ? 'سجل مدفوعات العملاء والفواتير الصادرة' : 'System Payment Invoices Audit'}</h3>
+
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Invoice ID</th>
+                      <th>{locale === 'ar' ? 'العميل' : 'Customer'}</th>
+                      <th>{locale === 'ar' ? 'المبلغ الإجمالي' : 'Total Amount'}</th>
+                      <th>{locale === 'ar' ? 'حالة الدفع' : 'Payment Status'}</th>
+                      <th>{locale === 'ar' ? 'التاريخ والوقت' : 'Paid timestamp'}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {invoices.map(inv => (
+                      <tr key={inv.id}>
+                        <td>#{inv.id}</td>
+                        <td>{inv.user || 'Unknown'}</td>
+                        <td><strong>{inv.amount} SAR</strong></td>
+                        <td>{inv.status}</td>
+                        <td>{new Date(inv.created_at).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          { }
+          {activeItem === 'admin_notifications' && isAdminMode && (
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+              <h3 style={{ marginBottom: '16px', fontWeight: 700 }}>{locale === 'ar' ? 'إرسال تنبيهات جماعية لكافة المستخدمين بالمنصة' : 'Broadcast system-wide alert notifications'}</h3>
+
+              <form onSubmit={handleBroadcastAlert} style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxWidth: '600px' }}>
+                <div>
+                  <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>{locale === 'ar' ? 'عنوان الإشعار:' : 'Notification Title:'}</label>
+                  <input type="text" required value={bcTitle} onChange={(e) => setBcTitle(e.target.value)} placeholder="مثال: صيانة دورية للمنصة" style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>{locale === 'ar' ? 'قناة الإرسال:' : 'Notification type:'}</label>
+                  <select value={bcType} onChange={(e) => setBcType(e.target.value)} style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }}>
+                    <option value="update">{locale === 'ar' ? 'إشعار المنصة (تحديث بالسيستم)' : 'Platform System Update alert'}</option>
+                    <option value="expiry">{locale === 'ar' ? 'تحذير انتهاء الباقة' : 'Subscription warning'}</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>{locale === 'ar' ? 'محتوى الرسالة:' : 'Notification content details:'}</label>
+                  <textarea rows={6} required value={bcContent} onChange={(e) => setBcContent(e.target.value)} placeholder="اكتب تفاصيل الإشعار هنا للمستخدمين..." style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+                </div>
+
+                <button type="submit" className="btn btn-primary">
+                  {locale === 'ar' ? 'إرسال البث الجماعي الآن ⚡' : 'Broadcast Alert Notification ⚡'}
+                </button>
+              </form>
+            </div>
+          )}
+
+          { }
+          {activeItem === 'admin_tickets' && isAdminMode && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.5fr', gap: '24px' }}>
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+                <h3 style={{ marginBottom: '14px', fontWeight: 700 }}>{locale === 'ar' ? 'تذاكر الدعم الفني المعلقة بالمنصة' : 'Support Tickets Queue'}</h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {tickets.map(t => (
+                    <div key={t.id} onClick={() => setActiveTicket(t)} style={{
+                      padding: '14px', border: '1px solid var(--border-light)', borderRadius: '8px', cursor: 'pointer',
+                      background: activeTicket?.id === t.id ? 'var(--primary-lighter)' : 'var(--bg-tertiary)'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <strong>{t.subject}</strong>
+                        <span style={{ fontSize: '11px', color: '#EB5757' }}>{t.priority.toUpperCase()}</span>
+                      </div>
+                      <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t.user_email}</span>
+                      <span style={{ fontSize: '11px', display: 'block', marginTop: '6px', color: 'var(--text-tertiary)' }}>{t.status.toUpperCase()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {activeTicket && (
+                <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <h3 style={{ fontWeight: 700 }}>Ticket #{activeTicket.id}: {activeTicket.subject}</h3>
+                  <p style={{ background: 'var(--bg-tertiary)', padding: '12px', borderRadius: '6px', fontSize: '14px' }}>{activeTicket.description}</p>
+
+                  <div style={{ flex: 1, maxHeight: '200px', overflow: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', border: '1px solid var(--border-light)', padding: '12px', borderRadius: '6px' }}>
+                    {(activeTicket.messages || []).map((m: any) => (
+                      <div key={m.id} style={{ alignSelf: m.sender_email === user.email ? 'flex-end' : 'flex-start', background: m.sender_email === user.email ? 'var(--primary-lighter)' : '#f2f2f2', padding: '8px 12px', borderRadius: '8px', maxWidth: '80%', fontSize: '13px' }}>
+                        <strong>{m.sender_email}:</strong> {m.message}
+                      </div>
+                    ))}
+                  </div>
+
+                  <form onSubmit={handleSendTicketReply} style={{ display: 'flex', gap: '8px' }}>
+                    <input type="text" value={ticketReplyText} onChange={(e) => setTicketReplyText(e.target.value)} placeholder="Type reply..." style={{ flex: 1, padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+                    <button type="submit" className="btn btn-primary">Send</button>
+                  </form>
+                </div>
+              )}
+            </div>
+          )}
+
+          { }
+          {activeItem === 'admin_agreements' && isAdminMode && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+                <h3 style={{ marginBottom: '16px', fontWeight: 700 }}>{locale === 'ar' ? 'إدارة اتفاقيات وبنود شروط الخدمة للعملاء' : 'Platform Consent Agreements Builder'}</h3>
+
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>{locale === 'ar' ? 'حالة التفعيل' : 'Active Status'}</th>
+                      <th>{locale === 'ar' ? 'تاريخ الإنشاء' : 'Created at'}</th>
+                      <th>{locale === 'ar' ? 'تصدير التقارير' : 'Consents signatures report'}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {agreements.map(agr => (
+                      <tr key={agr.id}>
+                        <td style={{ fontWeight: 700 }}>{agr.title}</td>
+                        <td>{agr.is_active ? 'Active' : 'Inactive'}</td>
+                        <td>{new Date(agr.created_at).toLocaleDateString()}</td>
+                        <td>
+                          <a href={`${API_BASE_URL}/api/v1/whatsapp/admin/agreements/${agr.id}/signatures/pdf/`} download className="btn btn-xs btn-outline">
+                            {locale === 'ar' ? 'تصدير PDF الفورية للموقعين' : 'Download signed consents PDF'}
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              { }
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)' }}>
+                <h3 style={{ marginBottom: '14px', fontWeight: 700 }}>{locale === 'ar' ? 'سجل تواقيع موافقات العملاء المسجلين' : 'Client Consent Signatures tracker Log'}</h3>
+
+                <div className={styles.tableWrapper}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>{locale === 'ar' ? 'العميل' : 'Client Email'}</th>
+                        <th>{locale === 'ar' ? 'الاسم بالكامل' : 'Signed Full Name'}</th>
+                        <th>{locale === 'ar' ? 'الجوال المصدّق' : 'Verified phone'}</th>
+                        <th>{locale === 'ar' ? 'الاتفاقية' : 'Agreement'}</th>
+                        <th>{locale === 'ar' ? 'عنوان الـ IP' : 'Consent signing IP'}</th>
+                        <th>{locale === 'ar' ? 'تاريخ التوقيع' : 'Signed Timestamp'}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {adminSignatures.map(sig => (
+                        <tr key={sig.id}>
+                          <td>{sig.email}</td>
+                          <td>{sig.full_name}</td>
+                          <td>{sig.phone_number}</td>
+                          <td>{sig.agreement_title}</td>
+                          <td>{sig.ip_address}</td>
+                          <td>{new Date(sig.timestamp).toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          { }
+          {activeItem === 'admin_settings' && isAdminMode && (
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', padding: '24px', borderRadius: 'var(--radius-xl)', maxWidth: '600px' }}>
+              <h3 style={{ marginBottom: '16px', fontWeight: 700 }}>{locale === 'ar' ? 'إعدادات النظام والربط العام' : 'System-wide credentials configuration'}</h3>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div>
+                  <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>SMTP Host Server:</label>
+                  <input type="text" defaultValue="smtp.mailtrap.io" style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>SMTP Port:</label>
+                  <input type="text" defaultValue="2525" style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>Telegram Bot Token alert:</label>
+                  <input type="password" value="tlg_bot_xxxxxx" readOnly style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>Stripe Payment API gateway Key:</label>
+                  <input type="password" value="sk_test_xxxxxx" readOnly style={{ width: '100%', padding: '10px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+                </div>
+
+                <button onClick={() => alert('Settings Saved!')} className="btn btn-primary" style={{ marginTop: '10px' }}>
+                  {locale === 'ar' ? 'حفظ التعديلات' : 'Save Credentials'}
+                </button>
+              </div>
+            </div>
+          )}
+
+        </div>
+      </main>
+
+      { }
+      { }
+      { }
+
+      { }
+      {isAgreementModalOpen && selectedAgreement && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '16px' }}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-xl)', width: '100%', maxWidth: '600px', padding: '28px', maxHeight: '90vh', overflow: 'auto' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '14px', borderBottom: '1px solid var(--border-light)', paddingBottom: '8px' }}>
+              {locale === 'ar' ? `اتفاقية استخدام الخدمة: ${selectedAgreement.title}` : `Service Consent Terms: ${selectedAgreement.title}`}
+            </h3>
+
+            { }
+            <div style={{
+              background: 'var(--bg-tertiary)', padding: '14px', borderRadius: '8px', fontSize: '13px', lineHeight: '1.6',
+              maxHeight: '200px', overflow: 'auto', marginBottom: '18px', color: 'var(--text-secondary)'
+            }}>
+              {selectedAgreement.content}
+            </div>
+
+            <form onSubmit={handleSignAgreement} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <label style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>{locale === 'ar' ? 'الاسم بالكامل:' : 'Full Name:'}</label>
+                <input type="text" required value={consentName} onChange={(e) => setConsentName(e.target.value)} placeholder="اكتب اسمك الثلاثي" style={{ width: '100%', padding: '8px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>{locale === 'ar' ? 'البريد الإلكتروني:' : 'Email Address:'}</label>
+                <input type="email" required value={consentEmail} onChange={(e) => setConsentEmail(e.target.value)} placeholder="email@example.com" style={{ width: '100%', padding: '8px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>{locale === 'ar' ? 'رقم الهاتف:' : 'Phone Number:'}</label>
+                <input type="text" required value={consentPhone} onChange={(e) => setConsentPhone(e.target.value)} placeholder="+966500000000" style={{ width: '100%', padding: '8px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+              </div>
+
+              <label style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '12px', marginTop: '6px' }}>
+                <input type="checkbox" checked={consentAccepted} onChange={(e) => setConsentAccepted(e.target.checked)} />
+                <span>{locale === 'ar' ? 'أوافق على جميع الشروط والأحكام الخاصة باتفاقية الاستخدام الموضحة أعلاه.' : 'I accept the terms and conditions outlined in the agreement above.'}</span>
+              </label>
+
+              <div style={{ display: 'flex', gap: '8px', marginTop: '16px', justifyContent: 'flex-end' }}>
+                <button type="button" onClick={() => setIsAgreementModalOpen(false)} className="btn btn-outline">
+                  {locale === 'ar' ? 'إلغاء' : 'Cancel'}
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  {locale === 'ar' ? 'الموافقة والتوقيع ✍' : 'Agree & Sign ✍'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      { }
+      {isModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '16px' }}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-xl)', width: '100%', maxWidth: '500px', padding: '28px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '20px' }}>
+              {locale === 'ar' ? 'إضافة جهاز / مثيل واتساب جديد بالمنصة' : 'Connect New WhatsApp Device'}
+            </h3>
+
+            <form onSubmit={handleCreateInstance} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
+                  {locale === 'ar' ? 'اسم الجهاز (للتمييز فقط):' : 'Device / Instance Name:'}
+                </label>
+                <input type="text" value={newInstanceName} onChange={(e) => setNewInstanceName(e.target.value)} placeholder="Sales Line, Support Phone" required style={{ width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
+                  {locale === 'ar' ? 'نوع الاتصال (الربط spec):' : 'Connection Type:'}
+                </label>
+                <select value={newInstanceType} onChange={(e) => setNewInstanceType(e.target.value)} style={{ width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-light)', borderRadius: '4px' }}>
+                  <option value="web_qr">{locale === 'ar' ? 'واتساب ويب - مسح كود QR (مستحسن)' : 'WhatsApp Web - QR Scan (Recommended)'}</option>
+                  <option value="meta">{locale === 'ar' ? 'واجهة Meta Cloud API الرسمية' : 'Meta Cloud API Official'}</option>
+                </select>
+              </div>
+
+              {newInstanceType === 'meta' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', border: '1px solid var(--border-light)', padding: '16px', borderRadius: '4px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px' }}>Phone Number ID:</label>
+                    <input type="text" value={newPhoneId} onChange={(e) => setNewPhoneId(e.target.value)} required style={{ width: '100%', padding: '6px', background: 'var(--bg-primary)' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px' }}>WABA Account ID:</label>
+                    <input type="text" value={newWabaId} onChange={(e) => setNewWabaId(e.target.value)} required style={{ width: '100%', padding: '6px', background: 'var(--bg-primary)' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px' }}>Meta Access Token:</label>
+                    <input type="text" value={newAccessToken} onChange={(e) => setNewAccessToken(e.target.value)} required style={{ width: '100%', padding: '6px', background: 'var(--bg-primary)' }} />
+                  </div>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '16px', justifyContent: 'flex-end' }}>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-outline">
+                  {locale === 'ar' ? 'إلغاء' : 'Cancel'}
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  {locale === 'ar' ? 'تأكيد الإضافة' : 'Confirm Device'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      { }
+      {isPlanModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '16px' }}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-xl)', width: '100%', maxWidth: '500px', padding: '28px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '20px' }}>
+              {locale === 'ar' ? 'إنشاء باقة تسعير جديدة بالسيستم' : 'Create pricing plan'}
+            </h3>
+
+            <form onSubmit={handleAddPlan} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ fontSize: '13px', display: 'block', marginBottom: '4px' }}>{locale === 'ar' ? 'اسم الباقة:' : 'Plan Name:'}</label>
+                <input type="text" required value={adminPlanName} onChange={(e) => setAdminPlanName(e.target.value)} placeholder="Starter, Business" style={{ width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: '13px', display: 'block', marginBottom: '4px' }}>{locale === 'ar' ? 'السعر بالريال:' : 'Price (SAR):'}</label>
+                <input type="number" required value={adminPlanPrice} onChange={(e) => setAdminPlanPrice(e.target.value)} placeholder="99.00" style={{ width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-light)', borderRadius: '4px' }} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                <div>
+                  <label style={{ fontSize: '12px' }}>{locale === 'ar' ? 'المدة باليوم' : 'Days'}</label>
+                  <input type="number" value={adminPlanDays} onChange={(e) => setAdminPlanDays(e.target.value)} style={{ width: '100%', padding: '8px', background: 'var(--bg-tertiary)' }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px' }}>{locale === 'ar' ? 'حد الأجهزة' : 'Devices'}</label>
+                  <input type="number" value={adminPlanDevices} onChange={(e) => setAdminPlanDevices(e.target.value)} style={{ width: '100%', padding: '8px', background: 'var(--bg-tertiary)' }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px' }}>{locale === 'ar' ? 'رسائل اليوم' : 'Daily limit'}</label>
+                  <input type="number" value={adminPlanMsgs} onChange={(e) => setAdminPlanMsgs(e.target.value)} style={{ width: '100%', padding: '8px', background: 'var(--bg-tertiary)' }} />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '16px', justifyContent: 'flex-end' }}>
+                <button type="button" onClick={() => setIsPlanModalOpen(false)} className="btn btn-outline">
+                  {locale === 'ar' ? 'إلغاء' : 'Cancel'}
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  {locale === 'ar' ? 'تأكيد إنشاء الباقة' : 'Create Plan'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+
+      {isEmailOtpModalOpen && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent} style={{ maxWidth: '400px' }}>
+            <div className={styles.modalHeader}>
+              <h4>{locale === 'ar' ? 'تأكيد البريد الإلكتروني' : 'Verify Email'}</h4>
+              <button className={styles.modalClose} onClick={() => setIsEmailOtpModalOpen(false)}>×</button>
+            </div>
+            <div className={styles.modalBody}>
+              <form onSubmit={handleChangeEmailVerify} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <p>{locale === 'ar' ? 'لقد أرسلنا كود التحقق إلى بريدك الجديد. يرجى إدخاله هنا:' : 'We sent a verification code to your new email. Please enter it here:'}</p>
+                <input
+                  type="text"
+                  value={editEmailOtp}
+                  onChange={(e) => setEditEmailOtp(e.target.value)}
+                  placeholder={locale === 'ar' ? 'أدخل الكود...' : 'Enter OTP...'}
+                  required
+                  style={{ padding: '10px', borderRadius: '4px', border: '1px solid var(--border-light)', background: 'var(--bg-primary)' }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                  <button type="button" onClick={() => setIsEmailOtpModalOpen(false)} className="btn btn-outline">{locale === 'ar' ? 'إلغاء' : 'Cancel'}</button>
+                  <button type="submit" className="btn btn-primary">{locale === 'ar' ? 'تأكيد الكود' : 'Verify OTP'}</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isPhoneOtpModalOpen && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent} style={{ maxWidth: '400px' }}>
+            <div className={styles.modalHeader}>
+              <h4>{locale === 'ar' ? 'تأكيد رقم الهاتف' : 'Verify Phone'}</h4>
+              <button className={styles.modalClose} onClick={() => setIsPhoneOtpModalOpen(false)}>×</button>
+            </div>
+            <div className={styles.modalBody}>
+              <form onSubmit={handleChangePhoneVerify} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <p>{locale === 'ar' ? 'لقد أرسلنا رسالة SMS تحتوي على كود التحقق للرقم الجديد. يرجى إدخاله هنا:' : 'We sent an SMS with a verification code to your new phone. Please enter it here:'}</p>
+                <input
+                  type="text"
+                  value={editPhoneOtp}
+                  onChange={(e) => setEditPhoneOtp(e.target.value)}
+                  placeholder={locale === 'ar' ? 'أدخل الكود...' : 'Enter OTP...'}
+                  required
+                  style={{ padding: '10px', borderRadius: '4px', border: '1px solid var(--border-light)', background: 'var(--bg-primary)' }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                  <button type="button" onClick={() => setIsPhoneOtpModalOpen(false)} className="btn btn-outline">{locale === 'ar' ? 'إلغاء' : 'Cancel'}</button>
+                  <button type="submit" className="btn btn-primary">{locale === 'ar' ? 'تأكيد الكود' : 'Verify OTP'}</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

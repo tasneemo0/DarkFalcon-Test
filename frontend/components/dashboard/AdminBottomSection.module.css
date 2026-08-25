@@ -1,0 +1,682 @@
+/* AdminBottomSection.module.css */
+
+/* ─── New Bottom Grid Layout ─────────────────────────────────────────────── */
+.bottomGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  margin-top: 32px;
+  align-items: start;
+}
+
+.bottomGridLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.bottomGridRight {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (max-width: 1100px) {
+  .bottomGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .bottomGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── Card General ───────────────────────────────────────────────────────── */
+.card {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-light);
+  flex-shrink: 0;
+}
+
+.cardTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cardIcon {
+  color: var(--primary);
+  opacity: 0.9;
+}
+
+/* ─── Section Footer (View All link) ─────────────────────────────────────── */
+.sectionFooter {
+  padding: 10px 20px;
+  border-top: 1px solid var(--border-light);
+  flex-shrink: 0;
+}
+
+.viewAllBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+  opacity: 0.85;
+  transition: opacity 150ms ease;
+}
+
+.viewAllBtn:hover {
+  opacity: 1;
+}
+
+/* ─── Scrollable Body ─────────────────────────────────────────────────────── */
+.scrollableBody {
+  overflow-y: auto;
+  padding: 0;
+}
+
+.scrollableBody::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollableBody::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollableBody::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+.scrollableBody::-webkit-scrollbar-thumb:hover {
+  background: var(--border);
+}
+
+/* ─── Invoices Table ─────────────────────────────────────────────────────── */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 500;
+  text-align: right;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border-light);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 0 20px;
+  height: 52px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-primary);
+  font-size: 13px;
+  vertical-align: middle;
+  transition: background-color 150ms ease;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table tr:hover td {
+  background-color: var(--bg-tertiary);
+}
+
+.emailCell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.dateCell {
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+
+/* ─── Status Badges ───────────────────────────────────────────────────────── */
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.statusPaid {
+  background-color: var(--success-bg);
+  color: var(--success);
+}
+
+.statusUnpaid {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.statusRejected {
+  background-color: var(--error-bg);
+  color: var(--error);
+}
+
+.statusPending {
+  background-color: var(--primary-light);
+  color: var(--primary);
+}
+
+/* ─── Action Buttons ─────────────────────────────────────────────────────── */
+.viewBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background-color: var(--surface-active);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.viewBtn:hover:not(:disabled) {
+  background-color: var(--primary-light);
+  border-color: var(--primary);
+}
+
+.viewBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── System Status ───────────────────────────────────────────────────────── */
+.statusContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+}
+
+.statusItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  transition: background-color 150ms ease;
+}
+
+.statusItem:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.statusItemLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.statusIconBox {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background-color: var(--primary-light);
+  border: 1px solid var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.statusName {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.statusDotBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 5px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.online {
+  background-color: var(--success-bg);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.online::before {
+  content: "";
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--success);
+  flex-shrink: 0;
+}
+
+.offline {
+  background-color: var(--error-bg);
+  border-color: var(--error);
+  color: var(--error);
+}
+
+.offline::before {
+  content: "";
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--error);
+  flex-shrink: 0;
+}
+
+.unknown {
+  color: var(--text-secondary);
+}
+
+.unknown::before {
+  content: "";
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+/* ─── Audit Log Feed ──────────────────────────────────────────────────────── */
+.feedList {
+  display: flex;
+  flex-direction: column;
+}
+
+.feedItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border-light);
+  transition: background-color 150ms ease;
+}
+
+.feedItem:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.feedItem:last-child {
+  border-bottom: none;
+}
+
+/* HTTP Method Badge */
+.methodBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  min-width: 42px;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+}
+
+.methodPost {
+  background-color: var(--success-bg);
+  color: var(--success);
+}
+
+.methodGet {
+  background-color: var(--info-bg);
+  color: var(--info);
+}
+
+.methodDelete {
+  background-color: var(--error-bg);
+  color: var(--error);
+}
+
+.methodPut {
+  background-color: var(--primary-light);
+  color: var(--primary);
+}
+
+.methodPatch {
+  background-color: var(--primary-light);
+  color: var(--primary);
+}
+
+.methodOther {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.feedContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.feedEndpoint {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.feedMeta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+
+/* Status Code Badge */
+.statusCodeBadge {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.statusCode2xx {
+  background-color: var(--success-bg);
+  color: var(--success);
+}
+
+.statusCode4xx {
+  background-color: var(--warning-bg);
+  color: var(--primary);
+}
+
+.statusCode5xx {
+  background-color: var(--error-bg);
+  color: var(--error);
+}
+
+/* ─── Today Summary ───────────────────────────────────────────────────────── */
+.todayStatList {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+}
+
+.todayStatRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border-light);
+  transition: background-color 150ms ease;
+}
+
+.todayStatRow:last-child {
+  border-bottom: none;
+}
+
+.todayStatRow:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.todayStatLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.todayStatIcon {
+  color: var(--primary);
+  opacity: 0.75;
+  flex-shrink: 0;
+}
+
+.todayStatValue {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Recent Customers ────────────────────────────────────────────────────── */
+.customerList {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+}
+
+.customerItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border-light);
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.customerItem:last-child {
+  border-bottom: none;
+}
+
+.customerItem:hover {
+  background-color: rgba(245, 130, 50, 0.03);
+}
+
+.customerAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  border: 1px solid var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary);
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.customerInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Primary text: customer full name */
+.customerName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Secondary text: email */
+.customerEmail {
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.customerMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.customerDate {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.accountStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  height: 17px;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.accountActive {
+  background-color: var(--success-bg);
+  color: var(--success);
+}
+
+.accountSuspended {
+  background-color: var(--warning-bg);
+  color: var(--primary);
+}
+
+.accountBanned {
+  background-color: var(--error-bg);
+  color: var(--error);
+}
+
+.accountPending {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+/* ─── Empty State ─────────────────────────────────────────────────────────── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 20px;
+  color: var(--text-secondary);
+  gap: 8px;
+  font-size: 13px;
+}
+
+/* ─── Mobile: Invoice Cards ───────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .table thead {
+    display: none;
+  }
+
+  .table tbody {
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .table tr {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .table td {
+    height: auto;
+    padding: 0;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12.5px;
+  }
+
+  .table tr:hover td {
+    background-color: transparent;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  .emailCell {
+    max-width: 120px;
+  }
+}
+/* Mobile UX Overrides */
+@media (max-width: 767px) {
+  .bottomGrid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+}

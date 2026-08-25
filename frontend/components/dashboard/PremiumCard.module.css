@@ -1,0 +1,252 @@
+/* ============================================================
+   PremiumCard.module.css — Enterprise micro-interactions
+   3D tilt, spotlight, shine, spring physics
+   ============================================================ */
+
+/* ── Base card ─────────────────────────────────────────────── */
+.premiumCard {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: 20px;
+  padding: 24px;
+  overflow: hidden;
+  cursor: default;
+  transform-origin: center center;
+  will-change: transform;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.18),
+    0 1px 3px rgba(0, 0, 0, 0.12);
+  transition:
+    box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .premiumCard:hover {
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.35),
+    0 8px 24px rgba(0, 0, 0, 0.22);
+}
+}
+
+
+/* Mouse-follow spotlight overlay */
+.spotlight {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  transition: background 50ms linear;
+}
+
+/* Shine sweep — triggers once on hover via animation */
+.shineSweep {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.06) 50%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 2;
+  animation: shine 600ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes shine {
+  0%   { left: -100%; }
+  100% { left: 150%; }
+}
+
+/* ── Card content ───────────────────────────────────────────── */
+.cardContent {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.cardBottom {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ── Icon wrapper ────────────────────────────────────────────── */
+.iconWrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  flex-shrink: 0;
+  transform-origin: center center;
+}
+
+/* ── Value ────────────────────────────────────────────────────── */
+.cardValue {
+  font-size: clamp(24px, 4vw, 32px);
+  font-weight: 900;
+  color: var(--text-primary);
+  letter-spacing: -1.5px;
+  line-height: 1;
+  transform-origin: bottom left;
+}
+
+/* ── Labels ───────────────────────────────────────────────────── */
+.cardTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.1px;
+}
+
+.cardSubtitle {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+/* ── Trend badge ─────────────────────────────────────────────── */
+.trendBadge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.trendUp {
+  background: rgba(16, 185, 129, 0.14);
+  color: #10b981;
+}
+
+.trendDown {
+  background: rgba(239, 68, 68, 0.14);
+  color: #ef4444;
+}
+
+/* ── Generic wrapper ─────────────────────────────────────────── */
+.premiumWrapper {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  will-change: transform;
+}
+
+/* =========================================================
+   Mobile Overrides (Compact & Dense)
+========================================================= */
+@media (max-width: 767px) {
+  .premiumCard, .premiumWrapper {
+    padding: 12px 14px !important;
+    height: auto !important;
+    min-height: 90px !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    background: var(--surface) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
+  
+  [data-theme="light"] .premiumCard, [data-theme="light"] .premiumWrapper {
+    border-color: rgba(0,0,0,0.06) !important;
+  }
+  
+  /* Remove glows, spotlights and shines on mobile to keep it clean */
+  /* Restored glows and shines */
+  
+  /* Optimize content layout */
+  .cardContent {
+    gap: 8px !important;
+  }
+  
+  .cardTop {
+    align-items: center !important;
+  }
+  
+  .iconWrap {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+  }
+  
+  .iconWrap svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+  
+  .cardValue {
+    font-size: 20px !important;
+  }
+  
+  .cardTitle {
+    font-size: 12px !important;
+  }
+  
+  .cardSubtitle {
+    font-size: 11px !important;
+  }
+}
+
+/* Touch Feedback */
+.premiumCard:active {
+  transform: scale(0.985);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+/* --- Professional Mobile Stat Card Layout --- */
+@media (max-width: 767px) {
+  .premiumCard, .premiumWrapper {
+    padding: 16px !important;
+    min-height: 0 !important;
+  }
+  
+  .cardContent {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+  }
+  
+  .cardTop {
+    flex-shrink: 0;
+  }
+  
+  .cardBottom {
+    flex: 1;
+    align-items: flex-start !important;
+    text-align: right !important;
+    gap: 2px !important;
+  }
+  
+  .cardValue {
+    font-size: 20px !important;
+    line-height: 1.2 !important;
+  }
+  
+  .cardTitle {
+    font-size: 13px !important;
+    margin-bottom: 2px !important;
+  }
+  
+  .cardSubtitle {
+    font-size: 11px !important;
+  }
+}

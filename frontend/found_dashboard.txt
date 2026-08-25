@@ -1,0 +1,293 @@
+Created At: 2026-08-05T18:18:19Z
+Completed At: 2026-08-05T18:18:22Z
+The following changes were made by the replace_file_content tool to: c:\project\web_hemo\frontend\components\dashboard\AdminDashboardOverview.tsx. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -81,7 +81,7 @@
+   return (
+     <div className={styles.ultraSaaSContainer} dir="rtl">
+ 
+-      {/* 0) Premium Page Header ────────────────────────────────────────── */}
++      {/* ── Page Header ──────────────────────────────────────────────────────── */}
+       <div className={styles.saasPageHeader}>
+         <div className={styles.saasPageHeaderInfo}>
+           <h1 className={styles.saasPageHeaderTitle}>لوحة الإدارة المركزية 👑</h1>
+@@ -88,4 +88,4 @@
+-            <Clock size={16} /> آخر تحديث للبيانات: {new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}
++            <Clock size={16} /> آخر تحديث: {new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}
+           </p>
+         </div>
+         <div className={styles.saasPageHeaderActions}>
+@@ -98,119 +98,157 @@
+         </div>
+       </div>
+ 
+-      {/* 1) 8 Stat Cards ────────────────────────────────────────────────── */}
+-      <div className={styles.saasSectionTitle}>
+-        <Activity size={24} color="var(--color-primary)" /> نظرة عامة
+-      </div>
+-      <div className={styles.saasGrid12}>
+-        <div className={styles.colSpan3}>
+-          <AdminStatCard title="إجمالي العملاء" value={data.customers_count ?? 0} icon={<Users size={24} />} color="primary" />
+-        </div>
+-        <div className={styles.colSpan3}>
+-          <AdminStatCard title="العملاء النشطين" value={data.active_customers ?? 0} icon={<UserCheck size={24} />} color="success" />
+-        </div>
+-        <div className={styles.colSpan3}>
+-          <AdminStatCard title="الاشتراكات النشطة" value={data.active_subscriptions ?? 0} icon={<Package size={24} />} color="info" />
+-        </div>
+-        <div className={styles.colSpan3}>
+-          <AdminStatCard title="إجمالي الإيرادات" value={`${Number(data.revenue ?? 0).toLocaleString()} ر.س`} icon={<DollarSign size={24} />} color="warning" />
+-        </div>
+-
+-        <div className={styles.colSpan3}>
+-          <AdminStatCard title="أجهزة متصلة" value={data.connected_devices ?? 0} icon={<Smartphone size={24} />} color="info" />
+-        </div>
+-        <div className={styles.colSpan3}>
+-          <AdminStatCard title="رسائل المنصة" value={data.messages_count ?? 0} icon={<MessageCircle size={24} />} color="primary" />
+-        </div>
+-        <div className={styles.colSpan3}>
+-          <AdminStatCard title="فواتير معلقة" value={data.pending_invoices ?? 0} icon={<Receipt size={24} />} color="danger" />
+-        </div>
+-        <div className={styles.colSpan3}>
+-          <AdminStatCard title="فواتير مدفوعة" value={data.paid_invoices ?? 0} icon={<CreditCard size={24} />} color="success" />
+-        </div>
+-      </div>
+-
+-      {/* 2) Analytics Charts ────────────────────────────────────────────── */}
+-      <div className={styles.saasSectionTitle} style={{ marginTop: '48px' }}>
+-        <Activity size={24} color="var(--color-primary)" /> تحليل أداء المنصة
+-      </div>
+-      <div className={styles.saasGrid12}>
+-        <div className={styles.colSpan6}>
+-          <DailyRevenueApexChart data={data.daily_revenue || []} />
+-        </div>
+-        <div className={styles.colSpan6}>
+-          <PlatformDailyMessagesApexChart data={data.messages_daily || []} />
+-        </div>
+-
+-        <div className={styles.colSpan6}>
+-          <DailyOrdersApexChart data={data.daily_orders || []} />
+-        </div>
+-        <div className={styles.colSpan6}>
+-          <DailyActiveUsersApexChart data={data.daily_active_users || []} />
+-        </div>
+-
+-        <div className={styles.colSpan6}>
+-          <CustomersGrowthApexChart data={data.customers_growth || []} />
+-        </div>
+-        <div className={styles.colSpan6}>
+-          <AdminInvoicesStatusApexChart data={data.invoices_by_status || []} />
+-        </div>
+-      </div>
+-
+-      {/* 3) Interactive Data Tables & System Status ──────────────────────── */}
+-      <div className={styles.saasGrid12} style={{ marginTop: '48px' }}>
+-
+-        {/* Recent Invoices Table */}
+-        <div className={styles.colSpan8}>
+-          <div className={styles.saasSectionTitle} style={{ marginBottom: '24px' }}>
+-            <Receipt size={24} color="var(--color-primary)" /> أحدث الفواتير
+-          </div>
+-          <AdminInvoicesTable invoices={data.recent_invoices || []} handleInvoiceAction={handleInvoiceAction} actionLoading={actionLoading} user={user} />
+-        </div>
+-
+-        {/* System Status & Audit Logs */}
+-        <div className={styles.colSpan4} style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+-
+-          <div>
+-            <div className={styles.saasSectionTitle} style={{ marginBottom: '24px' }}>
+-              <Server size={24} color="var(--color-primary)" /> حالة النظام
+-            </div>
+-            <div className={styles.saasCard}>
+-              <div className={styles.saasGrid12} style={{ margin: 0, gap: '16px' }}>
+-                <div className={styles.colSpan12}>
+-                  <StatusBadge label="API Core" status={data.system_status?.api} icon={<Code size={18} />} />
+-                </div>
+-                <div className={styles.colSpan12}>
+-                  <StatusBadge label="WhatsApp Gateway" status={data.system_status?.gateway} icon={<Smartphone size={18} />} />
+-                </div>
+-                <div className={styles.colSpan12}>
+-                  <StatusBadge label="Webhooks" status={data.system_status?.webhook} icon={<LinkIcon size={18} />} />
+-                </div>
+-              </div>
+-            </div>
+-          </div>
+-
+-          <div>
+-            <div className={styles.saasSectionTitle} style={{ marginBottom: '24px', marginTop: '32px' }}>
+-              <Users size={24} color="var(--color-primary)" /> أحدث العملاء
+-            </div>
+-            <RecentCustomersList customers={(data.recent_customers || []).slice(0, 5)} />
+-          </div>
+-
+-          <div>
+-            <div className={styles.saasSectionTitle} style={{ marginBottom: '24px', marginTop: '32px' }}>
+-              <Shield size={24} color="var(--color-primary)" /> سجل العمليات
+-            </div>
+-            <AdminAuditLogs logs={(data.audit_logs || []).slice(0, 5)} />
+-          </div>
+-
+-        </div>
+-
+-      </div>
+-
+-    </div>
+-  );
+-}
++      {/* ── Row 1: KPI Cards (full width, 4 per row × 2 rows) ────────────────── */}
++      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '24px' }}>
++        <AdminStatCard title="إجمالي العملاء"    value={data.customers_count ?? 0}                                   icon={<Users size={22} />}         color="primary" />
++        <AdminStatCard title="العملاء النشطين"   value={data.active_customers ?? 0}                                  icon={<UserCheck size={22} />}      color="success" />
++        <AdminStatCard title="الاشتراكات النشطة" value={data.active_subscriptions ?? 0}                              icon={<Package size={22} />}        color="info"    />
++        <AdminStatCard title="إجمالي الإيرادات"  value={`${Number(data.revenue ?? 0).toLocaleString()} ر.س`}        icon={<DollarSign size={22} />}     color="warning" />
++        <AdminStatCard title="أجهزة متصلة"       value={data.connected_devices ?? 0}                                 icon={<Smartphone size={22} />}     color="info"    />
++        <AdminStatCard title="رسائل المنصة"      value={data.messages_count ?? 0}                                    icon={<MessageCircle size={22} />}  color="primary" />
++        <AdminStatCard title="فواتير معلقة"      value={data.pending_invoices ?? 0}                                  icon={<Receipt size={22} />}        color="danger"  />
++        <AdminStatCard title="فواتير مدفوعة"     value={data.paid_invoices ?? 0}                                     icon={<CreditCard size={22} />}     color="success" />
++      </div>
++
++      {/* ── Row 2: Revenue + Active Users ────────────────────────────────────── */}
++      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
++        <DailyRevenueApexChart data={data.daily_revenue || []} />
++        <DailyActiveUsersApexChart data={data.daily_active_users || []} />
++      </div>
++
++      {/* ── Row 3: Customer Growth + Invoice Status ───────────────────────────── */}
++      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
++        <CustomersGrowthApexChart data={data.customers_growth || []} />
++        <AdminInvoicesStatusApexChart data={data.invoices_by_status || []} />
++      </div>
++
++      {/* ── Row 4: Latest Customers + Latest Invoices ─────────────────────────── */}
++      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
++
++        {/* Latest Customers */}
++        <div className={styles.saasCard} style={{ padding: 0, display: 'flex', flexDirection: 'column' }}>
++          <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', gap: '10px' }}>
++            <Users size={18} color="var(--color-primary)" />
++            <span style={{ fontWeight: 700, fontSize: '1rem', color: '#e2e8f0' }}>أحدث العملاء</span>
++          </div>
++          <div style={{ flex: 1 }}>
++            <RecentCustomersList customers={(data.recent_customers || []).slice(0, 6)} />
++          </div>
++        </div>
++
++        {/* Latest Invoices mini-table */}
++        <div className={styles.saasCard} style={{ padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
++          <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', gap: '10px' }}>
++            <Receipt size={18} color="var(--color-primary)" />
++            <span style={{ fontWeight: 700, fontSize: '1rem', color: '#e2e8f0' }}>أحدث الفواتير</span>
++          </div>
++          <div className={styles.saasTableWrapper} style={{ flex: 1 }}>
++            <table className={styles.saasTable}>
++              <thead>
++                <tr>
++                  <th>رقم</th>
++                  <th>العميل</th>
++                  <th>المبلغ</th>
++                  <th>الحالة</th>
++                  <th style={{ textAlign: 'center' }}>إجراء</th>
++                </tr>
++              </thead>
++              <tbody>
++                {(data.recent_invoices || []).slice(0, 6).map((inv: any) => (
++                  <tr key={inv.id}>
++                    <td style={{ color: '#64748b' }}>#{inv.id}</td>
++                    <td style={{ fontWeight: 600, maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{inv.user_email || 'غير محدد'}</td>
++                    <td>{Number(inv.amount || 0).toLocaleString()} ر.س</td>
++                    <td>
++                      <span className={`${styles.saasBadge} ${inv.status === 'paid' ? styles.saasBadgeSuccess : inv.status === 'under_review' ? styles.saasBadgeWarning : inv.status === 'rejected' ? styles.saasBadgeDanger : ''}`}>
++                        {inv.status === 'paid' ? 'مدفوعة' : inv.status === 'under_review' ? 'معلقة' : inv.status === 'rejected' ? 'مرفوضة' : 'غير مدفوعة'}
++                      </span>
++                    </td>
++                    <td>
++                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
++                        {inv.status === 'under_review' ? (
++                          <>
++                            {(!user?.role || user?.role?.permissions?.includes('payments.approve') || user?.is_superuser) && (
++                              <button onClick={() => handleInvoiceAction(inv.id, 'approve')} disabled={actionLoading === inv.id} className={styles.saasBtnSecondary} style={{ padding: '4px 10px', fontSize: '0.78rem', background: 'rgba(16,185,129,0.1)', color: '#10b981', borderColor: 'transparent' }}>
++                                <CheckCircle2 size={13} /> قبول
++                              </button>
++                            )}
++                            {(!user?.role || user?.role?.permissions?.includes('payments.reject') || user?.is_superuser) && (
++                              <button onClick={() => handleInvoiceAction(inv.id, 'reject')} disabled={actionLoading === inv.id} className={styles.saasBtnSecondary} style={{ padding: '4px 10px', fontSize: '0.78rem', background: 'rgba(239,68,68,0.1)', color: '#ef4444', borderColor: 'transparent' }}>
++                                <XCircle size={13} /> رفض
++                              </button>
++                            )}
++                          </>
++                        ) : (
++                          <button className={styles.saasBtnSecondary} style={{ padding: '4px 10px', fontSize: '0.78rem' }}>
++                            <Eye size={13} /> عرض
++                          </button>
++                        )}
++                      </div>
++                    </td>
++                  </tr>
++                ))}
++                {(data.recent_invoices || []).length === 0 && (
++                  <tr><td colSpan={5} style={{ textAlign: 'center', padding: '32px', color: '#64748b' }}>لا توجد فواتير</td></tr>
++                )}
++              </tbody>
++            </table>
++          </div>
++        </div>
++      </div>
++
++      {/* ── Row 5: Full Invoices Table ───────────────────────────────────────── */}
++      <div style={{ marginBottom: '24px' }}>
++        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
++          <Receipt size={20} color="var(--color-primary)" />
++          <span style={{ fontWeight: 700, fontSize: '1.05rem', color: '#e2e8f0' }}>جدول الفواتير الكامل</span>
++        </div>
++        <AdminInvoicesTable invoices={data.recent_invoices || []} handleInvoiceAction={handleInvoiceAction} actionLoading={actionLoading} user={user} />
++      </div>
++
++      {/* ── Row 6: Activity Timeline (7col) + System Health (5col) ───────────── */}
++      <div style={{ display: 'grid', gridTemplateColumns: '7fr 5fr', gap: '24px', marginBottom: '24px' }}>
++
++        {/* Activity Timeline */}
++        <div className={styles.saasCard} style={{ padding: 0 }}>
++          <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', gap: '10px' }}>
++            <Shield size={18} color="var(--color-primary)" />
++            <span style={{ fontWeight: 700, fontSize: '1rem', color: '#e2e8f0' }}>سجل العمليات</span>
++          </div>
++          <div style={{ padding: '24px' }}>
++            <AdminAuditLogs logs={(data.audit_logs || []).slice(0, 8)} />
++          </div>
++        </div>
++
++        {/* System Health */}
++        <div className={styles.saasCard} style={{ padding: 0 }}>
++          <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', gap: '10px' }}>
++            <Server size={18} color="var(--color-primary)" />
++            <span style={{ fontWeight: 700, fontSize: '1rem', color: '#e2e8f0' }}>حالة النظام</span>
++          </div>
++          <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
++            <StatusBadge label="API Core"          status={data.system_status?.api}     icon={<Code size={18} />}      />
++            <StatusBadge label="WhatsApp Gateway"  status={data.system_status?.gateway} icon={<Smartphone size={18} />} />
++            <StatusBadge label="Webhooks"          status={data.system_status?.webhook} icon={<LinkIcon size={18} />}  />
++            <StatusBadge label="قاعدة البيانات"   status="Operational"                 icon={<Server size={18} />}    />
++            <StatusBadge label="Redis"             status="Operational"                 icon={<Zap size={18} />}       />
++            <div style={{ marginTop: '8px', padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '14px', border: '1px solid var(--border-light)' }}>
++              <div style={{ fontSize: '0.78rem', color: '#64748b', marginBottom: '8px' }}>Uptime</div>
++              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
++                <div style={{ flex: 1, height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '99px', overflow: 'hidden' }}>
++                  <div style={{ width: '99.8%', height: '100%', background: 'linear-gradient(90deg, #6366f1, #22c55e)', borderRadius: '99px' }} />
++                </div>
++                <span style={{ fontSize: '0.85rem', color: '#22c55e', fontWeight: 700, whiteSpace: 'nowrap' }}>99.8%</span>
++              </div>
++            </div>
++          </div>
++        </div>
++      </div>
++
++    </div>
++  );
++}
++
+ 
+ // ─── Component: Admin Stat Card ──────────────────────────────────────────────
+ function AdminStatCard({ title, icon, value, color = 'primary' }: any) {
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.

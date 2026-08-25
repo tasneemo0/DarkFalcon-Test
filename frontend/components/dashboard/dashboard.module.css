@@ -1,0 +1,1190 @@
+/* ============================================================
+   COMPONENTS / DASHBOARD — Unified Design System
+   Extends globals.css — No local color overrides
+   Dark-first, RTL-ready
+   ============================================================ */
+
+/* ─── Container ─────────────────────────────────────────────────────────────── */
+.dashboardContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1rem 0;
+  width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* ─── Grid System ────────────────────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  gap: 1.25rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.grid2 {
+  grid-template-columns: 1fr;
+}
+
+.grid3 {
+  grid-template-columns: 1fr;
+}
+
+.grid4 {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 480px) {
+  .grid4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .grid2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grid3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .grid4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboardContainer {
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ─── Card ───────────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--motion-card), box-shadow var(--motion-card), border-color var(--motion-card);
+  overflow: hidden;
+  min-width: 0;
+  box-sizing: border-box;
+  width: 100%;
+  position: relative;
+  will-change: transform;
+}
+
+/* Subtle corner glow on hover */
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline-end: 0;
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(circle, var(--primary-lighter) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity var(--motion-card);
+  pointer-events: none;
+}
+
+@media (min-width: 768px) {
+  .card {
+    padding: 1.5rem;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover {
+  box-shadow: var(--glow-card);
+  transform: translateY(-4px);
+  border-color: var(--primary-light);
+}
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+/* ─── Card Header ────────────────────────────────────────────────────────────── */
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.cardTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  letter-spacing: -0.1px;
+}
+
+@media (min-width: 768px) {
+  .cardTitle {
+    font-size: 16px;
+  }
+}
+
+.cardIcon {
+  color: var(--text-tertiary);
+  opacity: 0.8;
+  flex-shrink: 0;
+  transition: color var(--transition-fast);
+}
+
+.card:hover .cardIcon {
+  color: var(--primary);
+  opacity: 1;
+}
+
+/* ─── Progress ───────────────────────────────────────────────────────────────── */
+.progressWrapper {
+  width: 100%;
+  margin-top: 0.5rem;
+  box-sizing: border-box;
+}
+
+.progressLabel {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-weight: 500;
+}
+
+.progressBarContainer {
+  width: 100%;
+  height: 6px;
+  background: var(--border-light);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progressBar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+  border-radius: var(--radius-full);
+  transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progressBarWarning {
+  background: linear-gradient(90deg, var(--warning), #d97706);
+}
+
+.progressBarDanger {
+  background: linear-gradient(90deg, var(--error), #dc2626);
+}
+
+/* ─── Badges ─────────────────────────────────────────────────────────────────── */
+.badge {
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.badgeSuccess {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.badgeWarning {
+  background: var(--warning-bg);
+  color: var(--warning);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.badgeDanger {
+  background: var(--error-bg);
+  color: var(--error);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.badgeInfo {
+  background: var(--info-bg);
+  color: var(--info);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.badgeNeutral {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-light);
+}
+
+.badgePrimary {
+  background: var(--primary-lighter);
+  color: var(--primary);
+  border: 1px solid var(--primary-light);
+}
+
+/* ─── Stat Value ─────────────────────────────────────────────────────────────── */
+.statValue {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  line-height: 1.1;
+  letter-spacing: -1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .statValue {
+    font-size: 2.1rem;
+  }
+}
+
+.statDesc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
+/* ─── List Items ─────────────────────────────────────────────────────────────── */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: var(--surface-hover);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  gap: 0.5rem;
+  min-width: 0;
+  transition: transform var(--motion-hover), background var(--motion-hover), border-color var(--motion-hover);
+  will-change: transform;
+}
+
+.listItem:hover {
+  background: var(--surface-active);
+  border-color: var(--border);
+  transform: translateX(-2px);
+}
+
+[dir="ltr"] .listItem:hover {
+  transform: translateX(2px);
+}
+
+.listItemInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.listItemIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.listItem:hover .listItemIcon {
+  background: var(--primary-lighter);
+  color: var(--primary);
+  border-color: var(--primary-light);
+}
+
+.listItemDetails {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.listItemTitle {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.listItemSubtitle {
+  font-size: 12px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─── Buttons ────────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: var(--radius-lg);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: transform var(--motion-button), box-shadow var(--motion-button), background var(--motion-button), color var(--motion-button), border-color var(--motion-button);
+  border: none;
+  min-height: 40px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
+  will-change: transform;
+}
+
+.btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  pointer-events: none;
+}
+
+.btn:hover::after {
+  opacity: 1;
+}
+
+.btnPrimary {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(232, 131, 58, 0.3);
+}
+
+.btnPrimary:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(232, 131, 58, 0.44);
+}
+
+.btn:active {
+  transform: scale(0.97);
+  transition-duration: 80ms;
+}
+
+.btnOutline {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1.5px solid var(--border);
+}
+
+.btnOutline:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-lighter);
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 4px 12px rgba(232, 131, 58, 0.15);
+}
+
+.btnGhost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.btnGhost:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.btnDanger {
+  background: var(--error-bg);
+  color: var(--error);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.btnDanger:hover {
+  background: var(--error);
+  color: #fff;
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+}
+
+/* ─── Invoice Table ──────────────────────────────────────────────────────────── */
+.invoiceTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.invoiceTable th {
+  padding: 10px 16px;
+  text-align: right;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-tertiary);
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  white-space: nowrap;
+  background: var(--bg-tertiary);
+}
+
+.invoiceTable :global(td) {
+  padding: 12px 16px;
+  text-align: right;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-primary);
+  font-size: 14px;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background var(--transition-fast);
+}
+
+.invoiceTable tbody tr:hover :global(td) {
+  background: var(--surface-hover);
+}
+
+.invoiceTable tr:last-child :global(td) {
+  border-bottom: none;
+}
+
+/* Mobile: convert to stacked cards */
+@media (max-width: 767px) {
+  .invoiceTable thead {
+    display: none;
+  }
+
+  .invoiceTable tbody tr {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background: var(--surface-hover);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .invoiceTable tbody tr:last-child {
+    margin-bottom: 0;
+  }
+
+  .invoiceTable :global(td) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.45rem 0;
+    border-bottom: 1px solid var(--border-light);
+    max-width: 100%;
+    white-space: normal;
+    font-size: 13px;
+  }
+
+  .invoiceTable td:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .invoiceTable td::before {
+    content: attr(data-label);
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-left: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .invoiceTable td[data-label="العميل"] {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}
+
+/* ─── Skeleton ───────────────────────────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(105deg,
+      var(--bg-tertiary) 30%,
+      var(--surface-hover) 50%,
+      var(--bg-tertiary) 70%);
+  background-size: 300% 100%;
+  animation: skeletonPulse 1.6s infinite linear;
+  border-radius: var(--radius-lg);
+}
+
+@keyframes skeletonPulse {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ─── Empty State ────────────────────────────────────────────────────────────── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+  text-align: center;
+  background: var(--surface-hover);
+  border-radius: var(--radius-xl);
+  border: 1px dashed var(--border);
+  flex: 1;
+  transition: all var(--transition-base);
+}
+
+.emptyState:hover {
+  background: var(--surface-active);
+}
+
+.emptyStateIcon {
+  width: 48px;
+  height: 48px;
+  color: var(--text-tertiary);
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.emptyStateTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.emptyStateDesc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  max-width: 280px;
+  line-height: 1.6;
+}
+
+/* ─── Alerts ─────────────────────────────────────────────────────────────────── */
+.alert {
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.alertWarning {
+  background: var(--warning-bg);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  color: var(--warning);
+}
+
+.alertError {
+  background: var(--error-bg);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: var(--error);
+}
+
+.alertInfo {
+  background: var(--info-bg);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: var(--info);
+}
+
+.alertSuccess {
+  background: var(--success-bg);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  color: var(--success);
+}
+
+/* ─── Chart Wrapper ──────────────────────────────────────────────────────────── */
+.chartWrapper {
+  width: 100%;
+  min-height: 200px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ─── Table Wrapper ──────────────────────────────────────────────────────────── */
+.tableWrapper {
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius-lg);
+}
+
+/* ─── Legacy table classes ───────────────────────────────────────────────────── */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table :global(td) {
+  padding: 12px 16px;
+  text-align: right;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.table th {
+  color: var(--text-tertiary);
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--bg-tertiary);
+}
+
+.table :global(td) {
+  color: var(--text-primary);
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+  transition: background var(--transition-fast);
+}
+
+.table tbody tr:hover :global(td) {
+  background: var(--surface-hover);
+}
+
+/* ─── Mobile Cards Table ─────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .mobileCardsTable thead {
+    display: none;
+  }
+
+  .mobileCardsTable tbody tr {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface-hover);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .mobileCardsTable :global(td) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.45rem 0;
+    border-bottom: 1px solid var(--border-light);
+    max-width: 100%;
+    white-space: normal;
+    font-size: 13px;
+    overflow: visible;
+  }
+
+  .mobileCardsTable td:last-child {
+    border-bottom: none;
+  }
+
+  .mobileCardsTable td::before {
+    content: attr(data-label);
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-left: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+/* =========================================================
+   Mobile Responsive Overrides
+========================================================= */
+@media (max-width: 767px) {
+  /* Prevent word break issues on long IDs, Emails */
+  .cardTitle, .statValue, .listItemTitle, .listItemSubtitle {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: normal;
+  }
+
+  /* Ensure grids are single column on mobile */
+  .grid, .grid2, .grid3, .grid4 {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .card {
+    padding: 1rem !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .dashboardContainer {
+    padding: 1rem 12px !important;
+    gap: 1rem !important;
+  }
+
+  /* Form Elements */
+  .input-group, :global(form) > div {
+    display: flex;
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+  
+  .btn {
+    min-height: 48px !important;
+    flex-wrap: wrap !important;
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  
+  /* Inline buttons that shouldn't be 100% width */
+  .listItem .btn, .btn.w-auto {
+    width: auto !important;
+  }
+  
+  /* Tables */
+  .tableWrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+  }
+  
+  :global(table).table {
+    min-width: 600px; /* Ensure content doesn't crush */
+  }
+
+  /* Modals */
+  .modalContent, :global([role="dialog"]), :global(dialog) {
+    width: calc(100% - 24px) !important;
+    max-width: 100% !important;
+    margin: 0 12px !important;
+    max-height: calc(100dvh - 24px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  /* Scrollable Modal Body */
+  .modalBody, .scrollableBody {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding-bottom: var(--sab);
+  }
+
+  /* Sidebar Drawer */
+  .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    height: 100dvh !important;
+    z-index: 1000 !important;
+    transform: translateX(100%) !important;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    width: 280px !important;
+    max-width: 80vw !important;
+  }
+
+  [dir="ltr"] .sidebar {
+    transform: translateX(-100%) !important;
+  }
+
+  .sidebarOpen {
+    transform: translateX(0) !important;
+  }
+  
+  [dir="ltr"] .sidebarOpen {
+    transform: translateX(0) !important;
+  }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    backdrop-filter: blur(4px);
+  }
+
+  .overlayVisible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  
+  /* Header adjustments */
+  .topBar {
+    padding: 0.75rem 12px !important;
+    gap: 0.5rem !important;
+  }
+  
+  .mobileMenuBtn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+}
+
+@media (min-width: 768px) {
+  .mobileMenuBtn {
+    display: none !important;
+  }
+  
+  .sidebar {
+    transform: translateX(0) !important;
+  }
+}
+
+/* --- Catch-all Table Fix --- */
+@media (max-width: 767px) {
+  :global(table), .table {
+    display: block !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  :global(th), :global(td) {
+    white-space: nowrap !important;
+  }
+  
+  /* Prevent Modal buttons from overflowing */
+  .modalFooter, .modalActions {
+    flex-wrap: wrap !important;
+  }
+  
+  .modalFooter button, .modalActions button {
+    flex: 1 1 auto !important;
+    min-width: 120px !important;
+  }
+}
+
+/* --- Burger Button Fix --- */
+@media (max-width: 767px) {
+  .burgerBtn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+}
+@media (min-width: 768px) {
+  .burgerBtn {
+    display: none !important;
+  }
+}
+
+/* --- Sidebar Drawer Position Fixes --- */
+@media (max-width: 767px) {
+  .sidebar {
+    right: 0 !important;
+    left: auto !important;
+  }
+  
+  [dir="ltr"] .sidebar {
+    left: 0 !important;
+    right: auto !important;
+  }
+}
+
+/* =========================================================
+   SaaS Native Mobile UI Overrides (Dense & Compact)
+========================================================= */
+@media (max-width: 767px) {
+  /* 1. Dashboard Container & Spacing */
+  .dashboardContainer {
+    padding: 12px 14px !important;
+    gap: 20px !important; /* Section gap */
+  }
+
+  /* 2. Page Header */
+  .saasPageHeader {
+    padding: 14px 16px !important;
+    margin-bottom: 16px !important;
+    gap: 8px !important;
+    background: var(--surface) !important;
+    border-radius: 14px !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    box-shadow: none !important;
+  }
+  
+  [data-theme="light"] .saasPageHeader {
+    border-color: rgba(0,0,0,0.06) !important;
+  }
+  
+  .saasPageHeaderTitle {
+    font-size: 22px !important;
+  }
+  
+  .saasPageHeaderSub {
+    font-size: 13px !important;
+  }
+  
+  .saasPageHeaderIcon {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  /* 3. Search & Filters */
+  .saasSearchInput, .filterSelect {
+    width: 100% !important;
+    height: 44px !important;
+    padding: 10px 16px !important;
+  }
+  
+  [dir="rtl"] .saasSearchInput {
+    padding: 10px 40px 10px 16px !important;
+  }
+  
+  /* Filter Container */
+  .filtersContainer {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 10px !important;
+    padding: 12px !important;
+    border-radius: 14px !important;
+    background: var(--surface) !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+  }
+  
+  [data-theme="light"] .filtersContainer {
+    border-color: rgba(0,0,0,0.06) !important;
+  }
+  
+  .filtersRow {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  
+  .filtersRow > * {
+    flex: 1 1 50% !important;
+    min-width: 0 !important;
+  }
+  
+  /* Refresh button */
+  .refreshBtn {
+    height: 44px !important;
+    padding: 0 16px !important;
+    width: auto !important;
+  }
+
+  /* 4. Stats Grids (2 Columns) */
+  .statsGrid, .grid4 {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* 5. Mobile Cards Default */
+  .card {
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 14px !important;
+    border-radius: 14px !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    background: var(--surface) !important;
+    box-shadow: none !important;
+  }
+  
+  [data-theme="light"] .card {
+    border-color: rgba(0,0,0,0.06) !important;
+  }
+
+  /* Typography tweaks */
+  .cardTitle { font-size: 15px !important; }
+  :global(h1) { font-size: 24px !important; }
+  :global(h2) { font-size: 18px !important; }
+  :global(h3) { font-size: 16px !important; }
+  :global(p) { font-size: 13px !important; }
+
+  /* Disable strong Gradients globally */
+  .gradientBg, .glowEffect {
+    background: var(--surface) !important;
+    box-shadow: none !important;
+  }
+  
+  /* Sidebar Width */
+  .sidebar {
+    width: min(86vw, 320px) !important;
+  }
+  
+  /* Chart Cards */
+  .chartCard {
+    height: auto !important;
+    min-height: 280px !important;
+  }
+}
+
+/* =========================================================
+   SaaS Responsive Tables (Compact Mobile Cards)
+========================================================= */
+@media (max-width: 767px) {
+  .saasResponsiveTable {
+    display: block !important;
+    width: 100% !important;
+    background: transparent !important;
+    border: none !important;
+  }
+  
+  .saasResponsiveTable thead {
+    display: none !important;
+  }
+  
+  .saasResponsiveTable tbody {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+  
+  .saasResponsiveTable tr {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    padding: 14px !important;
+    background: var(--surface) !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    border-radius: 12px !important;
+    position: relative !important;
+  }
+  
+  [data-theme="light"] .saasResponsiveTable tr {
+    border-color: rgba(0,0,0,0.06) !important;
+  }
+  
+  .saasResponsiveTable td {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 0 !important;
+    border: none !important;
+    font-size: 13px !important;
+    gap: 4px !important;
+    text-align: right !important;
+    white-space: normal !important;
+  }
+  
+  [dir="ltr"] .saasResponsiveTable td {
+    text-align: left !important;
+  }
+  
+  /* Make the first two cells (usually ID and Name) span full width */
+  .saasResponsiveTable td:nth-child(1),
+  .saasResponsiveTable td:nth-child(2) {
+    grid-column: 1 / -1 !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    border-bottom: 1px dashed rgba(255,255,255,0.05) !important;
+    padding-bottom: 8px !important;
+    margin-bottom: 4px !important;
+  }
+  
+  [data-theme="light"] .saasResponsiveTable td:nth-child(1),
+  [data-theme="light"] .saasResponsiveTable td:nth-child(2) {
+    border-color: rgba(0,0,0,0.05) !important;
+  }
+  
+  /* Make the last cell (Actions) span full width */
+  .saasResponsiveTable td:last-child {
+    grid-column: 1 / -1 !important;
+    flex-direction: row !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    margin-top: 8px !important;
+    padding-top: 8px !important;
+    border-top: 1px dashed rgba(255,255,255,0.05) !important;
+  }
+  
+  [data-theme="light"] .saasResponsiveTable td:last-child {
+    border-color: rgba(0,0,0,0.05) !important;
+  }
+  
+  /* Hide specific empty cells or checkboxes if needed */
+  .saasResponsiveTable td:has(input[type="checkbox"]) {
+    display: none !important;
+  }
+}
+
+/* Global Touch Feedback for Cards & Buttons */
+.card:active, .statCard:active, .premiumCard:active {
+  transform: scale(0.985) !important;
+  transition: transform 0.15s ease !important;
+}
+
+.btn:active, button:active, .actionBtn:active {
+  transform: scale(0.96) !important;
+  transition: transform 0.1s ease !important;
+}
+
+/* --- Professional Chart Grid Layout --- */
+.chartGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 1.25rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 767px) {
+  .chartGrid {
+    grid-template-columns: 1fr;
+  }
+}
