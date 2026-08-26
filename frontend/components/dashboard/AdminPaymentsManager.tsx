@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   FileText, Search, Filter, Calendar, Download, CheckCircle, XCircle, Clock,
-  Eye, Check, X, MoreVertical, CreditCard, Banknote, HelpCircle, User, 
+  Eye, Check, X, MoreVertical, CreditCard, Banknote, HelpCircle, User,
   ArrowUpRight, DollarSign, Receipt, TrendingUp, CheckCircle2, AlertCircle
 } from 'lucide-react';
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
@@ -19,7 +19,7 @@ export function AdminPaymentsManager({ invoices, locale, handleAction }: AdminPa
   const [mounted, setMounted] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  
+
   // Modals / Drawers State
   const [viewInvoice, setViewInvoice] = useState<any>(null);
   const [approveInvoice, setApproveInvoice] = useState<any>(null);
@@ -361,13 +361,13 @@ export function AdminPaymentsManager({ invoices, locale, handleAction }: AdminPa
                 {locale === 'ar' ? 'إدارة المدفوعات' : 'Payment Management'}
               </h1>
               <p style={{ margin: '8px 0 0', fontSize: '15px', color: 'var(--text-secondary)' }}>
-                {locale === 'ar' 
-                  ? 'مراجعة وإدارة جميع المدفوعات والفواتير وطلبات الاشتراك.' 
+                {locale === 'ar'
+                  ? 'مراجعة وإدارة جميع المدفوعات والفواتير وطلبات الاشتراك.'
                   : 'Review and manage all payments, invoices, and subscription requests.'}
               </p>
             </div>
-            <button style={{ 
-              background: 'var(--primary)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px', 
+            <button style={{
+              background: 'var(--primary)', color: 'var(--text-primary)', border: 'none', borderRadius: '12px',
               padding: '12px 20px', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px',
               cursor: 'pointer', boxShadow: 'var(--shadow-md)'
             }}>
@@ -379,9 +379,9 @@ export function AdminPaymentsManager({ invoices, locale, handleAction }: AdminPa
           <div className="apm-filters">
             <div style={{ position: 'relative', flex: '1 1 200px' }}>
               <Search size={16} style={{ position: 'absolute', top: 12, left: 12, color: 'var(--text-tertiary)' }} />
-              <input 
-                type="text" 
-                className="apm-filter-input" 
+              <input
+                type="text"
+                className="apm-filter-input"
                 placeholder={locale === 'ar' ? 'البحث بالاسم أو الإيميل...' : 'Search by name or email...'}
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
@@ -412,7 +412,7 @@ export function AdminPaymentsManager({ invoices, locale, handleAction }: AdminPa
 
         {/* Data Table */}
         <div className="apm-table-container">
-          <table className="saasResponsiveTable"  className="apm-table" style={{ direction: locale === 'ar' ? 'rtl' : 'ltr' }}>
+          <table className="saasResponsiveTable apm-table" style={{ direction: locale === 'ar' ? 'rtl' : 'ltr' }}>
             <thead>
               <tr>
                 <th>{locale === 'ar' ? 'رقم الفاتورة' : 'Invoice #'}</th>
@@ -495,7 +495,7 @@ export function AdminPaymentsManager({ invoices, locale, handleAction }: AdminPa
               <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 800 }}>Invoice #{viewInvoice.id}</h2>
               <button className="apm-btn-icon" onClick={() => setViewInvoice(null)}><X size={18} /></button>
             </div>
-            
+
             <div style={{ background: 'var(--surface-hover)', padding: '20px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <div className="apm-avatar-initials" style={{ width: 48, height: 48, fontSize: '18px' }}>
@@ -506,7 +506,7 @@ export function AdminPaymentsManager({ invoices, locale, handleAction }: AdminPa
                   <div style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>{viewInvoice.user_email || 'No email'}</div>
                 </div>
               </div>
-              
+
               <div style={{ height: '1px', background: 'var(--surface-hover)' }} />
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '14px' }}>
@@ -591,7 +591,7 @@ export function AdminPaymentsManager({ invoices, locale, handleAction }: AdminPa
             <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '20px' }}>
               Please provide a reason for rejecting invoice #{rejectInvoice.id}. This will be sent to the customer.
             </p>
-            <textarea 
+            <textarea
               value={rejectReason}
               onChange={e => setRejectReason(e.target.value)}
               placeholder="E.g., Payment proof is blurry..."
@@ -621,7 +621,7 @@ function StatusBadge({ status, locale }: { status: string, locale: string }) {
   if (isPaid) return <span className="apm-badge paid">{locale === 'ar' ? 'مكتمل' : 'Paid'}</span>;
   if (isPending) return <span className="apm-badge pending">{locale === 'ar' ? 'معلق' : 'Pending'}</span>;
   if (isRejected) return <span className="apm-badge rejected">{locale === 'ar' ? 'مرفوض' : 'Rejected'}</span>;
-  
+
   return <span className="apm-badge" style={{ background: 'var(--surface-hover)', color: 'var(--text-primary)' }}>{status}</span>;
 }
 
