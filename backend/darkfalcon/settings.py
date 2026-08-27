@@ -3,6 +3,7 @@ from pathlib import Path
 from datetime import timedelta
 import environ
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -225,4 +226,16 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 META_APP_ID = env('META_APP_ID', default='')
 META_APP_SECRET = env('META_APP_SECRET', default='')
 META_GRAPH_API_VERSION = env('META_GRAPH_API_VERSION', default='v20.0')
+
+# Resend SMTP
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+EMAIL_HOST = "smtp.resend.com"
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "resend"
+EMAIL_HOST_PASSWORD = os.getenv("RESEND_API_KEY")
+EMAIL_USE_TLS = True
+
+DEFAULT_FROM_EMAIL = "DarkFalcon <onboarding@resend.dev>"
+
 
