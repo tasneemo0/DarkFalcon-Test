@@ -1354,7 +1354,7 @@ echo $response;`;
     if (!aiTestMessage.trim()) return;
     setTestingAI(true);
     setAiTestResponse('');
-    
+
     setTimeout(() => {
       setAiTestResponse(locale === 'ar' ? 'هذا رد تجريبي من الذكاء الاصطناعي بناءً على إعداداتك...' : 'This is a mock AI response based on your configuration...');
       setTestingAI(false);
@@ -1518,7 +1518,7 @@ echo $response;`;
       <main className={styles.mainContent} style={(impersonatingUser !== null) ? { marginTop: '44px' } : undefined}>
 
         { }
-                <motion.header 
+        <motion.header
           className={styles.topBar}
           style={{
             backgroundColor: topBarBg as any,
@@ -2104,7 +2104,7 @@ echo $response;`;
 
           {activeItem === 'aiRules' && !isAdminMode && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              
+
               {/* Premium Page Header */}
               <div style={{ background: 'linear-gradient(135deg, var(--surface) 0%, rgba(var(--primary-rgb), 0.05) 100%)', borderRadius: 'var(--radius-xl)', padding: '32px 24px', border: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
                 <div>
@@ -2116,7 +2116,7 @@ echo $response;`;
                     {locale === 'ar' ? 'تحكم في طريقة الرد على رسائل عملائك لكل جهاز واتساب.' : 'Control how you reply to customer messages for each WhatsApp device.'}
                   </p>
                 </div>
-                
+
                 {/* Compact Status Indicator */}
                 <div style={{ background: 'var(--bg-primary)', padding: '12px 20px', borderRadius: '16px', border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '200px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-secondary)' }}>
@@ -2159,9 +2159,9 @@ echo $response;`;
                           const inst = instances.find(i => i.id === Number(e.target.value));
                           setSelectedInstance(inst || null);
                           if (inst) {
-                             setBotMode(inst.bot_mode || 'off');
-                             setAiProvider(inst.ai_provider || 'gemini');
-                             setAiModel(inst.ai_model || 'gemini-2.5-flash');
+                            setBotMode(inst.bot_mode || 'off');
+                            setAiProvider(inst.ai_provider || 'gemini');
+                            setAiModel(inst.ai_model || 'gemini-2.5-flash');
                           }
                         }}
                         style={{ width: '100%', padding: '16px 48px 16px 16px', appearance: 'none', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: '12px', fontSize: '15px', color: 'var(--text-primary)', fontWeight: 600, cursor: 'pointer', transition: 'border-color 0.2s' }}
@@ -2187,9 +2187,9 @@ echo $response;`;
                     <>
                       {/* Reply Mode Selection */}
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
-                        
+
                         {/* Mode: Disabled */}
-                        <div 
+                        <div
                           onClick={() => { setBotMode('off'); handleSaveBotSettings(selectedInstance.id, true, 'off'); }}
                           style={{ background: 'var(--surface)', padding: '16px', borderRadius: 'var(--radius-xl)', border: botMode === 'off' ? '2px solid var(--primary)' : '1px solid var(--border-light)', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative', transition: 'all 0.2s ease', transform: botMode === 'off' ? 'translateY(-2px)' : 'none', boxShadow: botMode === 'off' ? '0 8px 24px rgba(var(--primary-rgb), 0.15)' : 'none' }}
                         >
@@ -2204,7 +2204,7 @@ echo $response;`;
                         </div>
 
                         {/* Mode: AI */}
-                        <div 
+                        <div
                           onClick={() => { setBotMode('ai'); handleSaveBotSettings(selectedInstance.id, true, 'ai'); }}
                           style={{ background: 'var(--surface)', padding: '16px', borderRadius: 'var(--radius-xl)', border: botMode === 'ai' ? '2px solid var(--primary)' : '1px solid var(--border-light)', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative', transition: 'all 0.2s ease', transform: botMode === 'ai' ? 'translateY(-2px)' : 'none', boxShadow: botMode === 'ai' ? '0 8px 24px rgba(var(--primary-rgb), 0.15)' : 'none' }}
                         >
@@ -2219,7 +2219,7 @@ echo $response;`;
                         </div>
 
                         {/* Mode: Keywords */}
-                        <div 
+                        <div
                           onClick={() => { setBotMode('qa'); handleSaveBotSettings(selectedInstance.id, true, 'qa'); }}
                           style={{ background: 'var(--surface)', padding: '16px', borderRadius: 'var(--radius-xl)', border: botMode === 'qa' ? '2px solid var(--primary)' : '1px solid var(--border-light)', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative', transition: 'all 0.2s ease', transform: botMode === 'qa' ? 'translateY(-2px)' : 'none', boxShadow: botMode === 'qa' ? '0 8px 24px rgba(var(--primary-rgb), 0.15)' : 'none' }}
                         >
@@ -2236,7 +2236,7 @@ echo $response;`;
 
                       {/* Dynamic Content Area */}
                       <div style={{ marginTop: '8px' }}>
-                        
+
                         {botMode === 'off' && (
                           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} style={{ background: 'var(--surface)', padding: '48px 24px', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border-light)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
                             <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(160, 174, 192, 0.1)', color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -2257,7 +2257,7 @@ echo $response;`;
                                 <Settings size={22} color="var(--primary)" />
                                 {locale === 'ar' ? 'إعدادات الذكاء الاصطناعي' : 'AI Settings'}
                               </h3>
-                              
+
                               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                   <label style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{locale === 'ar' ? 'مزود الخدمة:' : 'Provider:'}</label>
@@ -2296,7 +2296,7 @@ echo $response;`;
                                 <Smartphone size={22} color="var(--primary)" />
                                 {locale === 'ar' ? 'اختبر المجيب' : 'Test Auto Responder'}
                               </h3>
-                              
+
                               <div style={{ flex: 1, background: 'var(--bg-primary)', borderRadius: '16px', border: '1px solid var(--border-light)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                                 <div style={{ padding: '16px', background: 'rgba(var(--primary-rgb), 0.1)', borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', gap: '12px' }}>
                                   <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}><Bot size={20} /></div>
@@ -2391,7 +2391,7 @@ echo $response;`;
                                       <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 800 }}>{locale === 'ar' ? 'إضافة قاعدة جديدة' : 'Add New Rule'}</h3>
                                       <button onClick={() => setIsAddRuleModalOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer' }}><X size={24} /></button>
                                     </div>
-                                    <form onSubmit={(e) => { handleAddFaqRule(e); if(newKeyword && newAnswer) setIsAddRuleModalOpen(false); }} style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                    <form onSubmit={(e) => { handleAddFaqRule(e); if (newKeyword && newAnswer) setIsAddRuleModalOpen(false); }} style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
                                       <div>
                                         <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '8px', color: 'var(--text-primary)' }}>{locale === 'ar' ? 'الكلمة المفتاحية:' : 'Keyword:'}</label>
                                         <input type="text" required value={newKeyword} onChange={(e) => setNewKeyword(e.target.value)} placeholder={locale === 'ar' ? 'مثال: أسعار، باقات، موقع' : 'e.g. price, plans, location'} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-light)', background: 'var(--bg-primary)', color: 'var(--text-primary)' }} />
@@ -2449,63 +2449,48 @@ echo $response;`;
 
 
           {activeItem === 'interactive_bot' && !isAdminMode && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div className={styles.interactiveBotContainer}>
 
               {/* 1. BRAND IDENTITY & PAGE HEADER */}
-              <div style={{
+              <div className={styles.botHeroCard} style={{
                 background: theme === 'dark' ? '#0B0D14' : '#FFFFFF',
-                borderRadius: 'var(--radius-xl)',
-                padding: '32px 24px',
                 color: theme === 'dark' ? 'white' : '#1E293B',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
                 boxShadow: theme === 'dark' ? '0 8px 32px rgba(0,0,0,0.4)' : '0 8px 24px rgba(0,0,0,0.04)',
                 border: theme === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.08)',
-                position: 'relative',
-                overflow: 'hidden'
               }}>
                 <div style={{
                   position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
                   background: theme === 'dark' ? 'radial-gradient(circle at 100% 0%, rgba(245,130,50,0.15), transparent 40%)' : 'radial-gradient(circle at 100% 0%, rgba(245,130,50,0.08), transparent 50%)',
                   pointerEvents: 'none'
                 }} />
-                
-                <div style={{ position: 'relative', zIndex: 1 }}>
-                  <h2 style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '28px', fontWeight: 800, margin: 0, color: theme === 'dark' ? 'white' : '#1E293B' }}>
+
+                <div className={styles.botHeroTitleContainer}>
+                  <h2 className={styles.botHeroTitle} style={{ color: theme === 'dark' ? 'white' : '#1E293B' }}>
                     <Bot size={32} color="rgba(245,130,50,0.9)" />
                     {locale === 'ar' ? 'المجيب التلقائي' : 'Auto Responder'}
                   </h2>
-                  <p style={{ margin: '8px 0 0 0', opacity: 0.7, fontSize: '15px' }}>
+                  <p className={styles.botHeroDesc}>
                     {locale === 'ar' ? 'أنشئ بوت واتساب ذكي لإدارة رسائل العملاء والردود التلقائية.' : 'Create a smart WhatsApp bot to manage customer messages and auto-replies.'}
                   </p>
                 </div>
 
                 {/* Header Status Area */}
-                <div style={{
-                  display: 'flex',
-                  gap: '24px',
-                  alignItems: 'center',
+                <div className={styles.botStatusArea} style={{
                   background: theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
-                  padding: '12px 24px',
-                  borderRadius: '16px',
                   border: theme === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.08)',
-                  backdropFilter: 'blur(10px)',
-                  position: 'relative',
-                  zIndex: 1
                 }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div className={styles.botStatusItem}>
                     <span style={{ fontSize: '12px', color: theme === 'dark' ? 'var(--text-tertiary)' : '#64748B' }}>{locale === 'ar' ? 'الجهاز' : 'Device'}</span>
                     <span style={{ fontSize: '14px', fontWeight: 600, color: theme === 'dark' ? 'white' : '#1E293B' }}>{selectedInstance ? selectedInstance.instance_name : (locale === 'ar' ? 'غير محدد' : 'None')}</span>
                   </div>
-                  
-                  <div style={{ width: '1px', height: '24px', background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
-                  
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+
+                  <div className={styles.botStatusDivider} style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
+
+                  <div className={styles.botStatusItem}>
                     <span style={{ fontSize: '12px', color: theme === 'dark' ? 'var(--text-tertiary)' : '#64748B' }}>{locale === 'ar' ? 'الحالة' : 'Status'}</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <div style={{ 
-                        width: '8px', height: '8px', borderRadius: '50%', 
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
+                      <div style={{
+                        width: '8px', height: '8px', borderRadius: '50%',
                         background: !selectedInstance ? '#6B7280' : (selectedInstance.status === 'connected' ? '#10B981' : '#EF4444'),
                         boxShadow: `0 0 8px ${!selectedInstance ? '#6B7280' : (selectedInstance.status === 'connected' ? '#10B981' : '#EF4444')}`
                       }} />
@@ -2514,10 +2499,10 @@ echo $response;`;
                       </span>
                     </div>
                   </div>
-                  
-                  <div style={{ width: '1px', height: '24px', background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
-                  
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+
+                  <div className={styles.botStatusDivider} style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
+
+                  <div className={styles.botStatusItem}>
                     <span style={{ fontSize: '12px', color: theme === 'dark' ? 'var(--text-tertiary)' : '#64748B' }}>{locale === 'ar' ? 'الوضع' : 'Mode'}</span>
                     <span style={{ fontSize: '14px', fontWeight: 600, color: theme === 'dark' ? 'white' : '#1E293B' }}>
                       {botMode === 'qa' ? (locale === 'ar' ? 'البوت التفاعلي' : 'Interactive Bot') : (locale === 'ar' ? 'معطل' : 'Disabled')}
@@ -2527,7 +2512,7 @@ echo $response;`;
               </div>
 
               {instances.length === 0 ? (
-                <div style={{ background: theme === 'dark' ? '#0B0D14' : '#FFFFFF', border: theme === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.08)', padding: '48px', borderRadius: 'var(--radius-xl)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                <div className={styles.botNoDevicePlaceholder} style={{ background: theme === 'dark' ? '#0B0D14' : '#FFFFFF', border: theme === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.08)' }}>
                   <div style={{ width: '64px', height: '64px', background: 'rgba(245,130,50,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Smartphone size={32} color="rgba(245,130,50,0.9)" />
                   </div>
@@ -2543,23 +2528,23 @@ echo $response;`;
                   <div style={{ flex: '1 1 320px', display: 'flex', flexDirection: 'column', gap: '24px', minWidth: 0 }}>
 
                     {/* 3. DEVICE SELECTION CARD */}
-                    <div style={{ background: theme === 'dark' ? '#0B0D14' : '#FFFFFF', border: theme === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.08)', padding: '16px', borderRadius: 'var(--radius-xl)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <div className={styles.botDeviceCard} style={{ background: theme === 'dark' ? '#0B0D14' : '#FFFFFF', border: theme === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.08)' }}>
+                      <div className={styles.botDeviceHeader}>
                         <h3 style={{ margin: 0, fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', color: theme === 'dark' ? 'white' : '#1E293B', fontSize: '16px' }}>
                           <Smartphone size={18} color="rgba(245,130,50,0.9)" />
                           {locale === 'ar' ? 'الجهاز النشط' : 'Active Device'}
                         </h3>
-                        
-                        <div style={{ position: 'relative' }}>
+
+                        <div style={{ position: 'relative', display: 'flex', flex: '0 1 auto' }}>
                           <select
                             value={selectedInstance?.id || ''}
                             onChange={(e) => {
                               const inst = instances.find(i => i.id === Number(e.target.value));
                               setSelectedInstance(inst || null);
                             }}
-                            style={{ 
-                              position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', 
-                              opacity: 0, cursor: 'pointer', zIndex: 2 
+                            style={{
+                              position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                              opacity: 0, cursor: 'pointer', zIndex: 2
                             }}
                           >
                             <option value="">{locale === 'ar' ? '-- اختر جهازاً --' : '-- Choose Device --'}</option>
@@ -2569,13 +2554,13 @@ echo $response;`;
                               </option>
                             ))}
                           </select>
-                          <button style={{ 
-                            background: theme === 'dark' ? 'rgba(255,255,255,0.03)' : '#F1F3F5', 
-                            border: theme === 'dark' ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(0,0,0,0.08)', 
-                            color: theme === 'dark' ? 'white' : '#1E293B', 
-                            padding: '8px 16px', 
-                            borderRadius: '8px', 
-                            fontSize: '13px', 
+                          <button className={styles.deviceSelectBtn} style={{
+                            background: theme === 'dark' ? 'rgba(255,255,255,0.03)' : '#F1F3F5',
+                            border: theme === 'dark' ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(0,0,0,0.08)',
+                            color: theme === 'dark' ? 'white' : '#1E293B',
+                            padding: '8px 16px',
+                            borderRadius: '8px',
+                            fontSize: '13px',
                             fontWeight: 600,
                             pointerEvents: 'none',
                             display: 'flex',
@@ -2588,10 +2573,10 @@ echo $response;`;
                       </div>
 
                       {selectedInstance ? (
-                        <div style={{ 
-                          background: theme === 'dark' ? 'rgba(255,255,255,0.02)' : '#F8F9FA', 
-                          border: theme === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.08)', 
-                          padding: '16px', 
+                        <div style={{
+                          background: theme === 'dark' ? 'rgba(255,255,255,0.02)' : '#F8F9FA',
+                          border: theme === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.08)',
+                          padding: '16px',
                           borderRadius: '12px',
                           display: 'flex',
                           flexDirection: 'column',
@@ -2611,7 +2596,7 @@ echo $response;`;
                               <Phone size={14} /> {selectedInstance.phone_number}
                             </div>
                           )}
-                          
+
                           {selectedInstance.status !== 'connected' && (
                             <div style={{ marginTop: '4px', padding: '10px 12px', background: 'rgba(235, 87, 87, 0.1)', border: '1px solid rgba(235, 87, 87, 0.2)', borderRadius: '8px', color: '#EB5757', fontSize: '13px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                               <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
@@ -2630,7 +2615,7 @@ echo $response;`;
                     {selectedInstance && (
                       <>
                         {/* 6. SETTINGS AREA - Mode Selection */}
-                        <div style={{ background: theme === 'dark' ? '#0B0D14' : '#FFFFFF', border: theme === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.08)', padding: '16px', borderRadius: 'var(--radius-xl)' }}>
+                        <div className={styles.botSettingsCard} style={{ background: theme === 'dark' ? '#0B0D14' : '#FFFFFF', border: theme === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.08)' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: theme === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.08)', paddingBottom: '16px' }}>
                             <h3 style={{ margin: 0, fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', color: theme === 'dark' ? 'white' : '#1E293B', fontSize: '16px' }}>
                               <Settings size={18} color="rgba(245,130,50,0.9)" />
@@ -2640,11 +2625,11 @@ echo $response;`;
 
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
                             {/* Disabled Mode */}
-                            <div 
+                            <div
                               onClick={() => setBotMode('off')}
-                              style={{ 
-                                padding: '16px', background: botMode === 'off' ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)', 
-                                border: `1px solid ${botMode === 'off' ? 'rgba(245,130,50,0.4)' : 'rgba(255,255,255,0.05)'}`, 
+                              style={{
+                                padding: '16px', background: botMode === 'off' ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)',
+                                border: `1px solid ${botMode === 'off' ? 'rgba(245,130,50,0.4)' : 'rgba(255,255,255,0.05)'}`,
                                 borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s ease',
                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                 boxShadow: botMode === 'off' ? '0 0 12px rgba(245,130,50,0.1)' : 'none'
@@ -2663,11 +2648,11 @@ echo $response;`;
                             </div>
 
                             {/* Interactive Bot Mode */}
-                            <div 
+                            <div
                               onClick={() => setBotMode('qa')}
-                              style={{ 
-                                padding: '16px', background: botMode === 'qa' ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)', 
-                                border: `1px solid ${botMode === 'qa' ? 'rgba(245,130,50,0.4)' : 'rgba(255,255,255,0.05)'}`, 
+                              style={{
+                                padding: '16px', background: botMode === 'qa' ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)',
+                                border: `1px solid ${botMode === 'qa' ? 'rgba(245,130,50,0.4)' : 'rgba(255,255,255,0.05)'}`,
                                 borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s ease',
                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                 boxShadow: botMode === 'qa' ? '0 0 12px rgba(245,130,50,0.1)' : 'none'
@@ -2686,7 +2671,7 @@ echo $response;`;
                             </div>
                           </div>
 
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', opacity: botMode === 'qa' ? 1 : 0.4, pointerEvents: botMode === 'qa' ? 'auto' : 'none' }}>
+                          <div className={styles.botSettingsGrid} style={{ opacity: botMode === 'qa' ? 1 : 0.4, pointerEvents: botMode === 'qa' ? 'auto' : 'none' }}>
                             <div>
                               <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, marginBottom: '8px', color: theme === 'dark' ? 'var(--text-secondary)' : '#475569' }}><Bot size={14} /> {locale === 'ar' ? 'اسم البوت:' : 'Bot Name:'}</label>
                               <input type="text" value={interactiveBotName} onChange={e => setInteractiveBotName(e.target.value)} placeholder={locale === 'ar' ? "مثال: المساعد الذكي" : "e.g. Smart Assistant"} style={{ width: '100%', padding: '10px 14px', background: theme === 'dark' ? 'rgba(255,255,255,0.02)' : '#F8F9FA', border: theme === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.08)', color: theme === 'dark' ? 'white' : '#1E293B', borderRadius: '8px' }} />
@@ -2845,26 +2830,26 @@ echo $response;`;
 
                   {/* 4. CHAT PREVIEW DESIGN */}
                   <div style={{ flex: '0 0 auto', width: '100%', maxWidth: '380px', margin: '0 auto' }}>
-                    <div style={{ 
-                      background: theme === 'dark' ? '#0B0D14' : '#FFFFFF', 
-                      borderRadius: '24px', 
-                      padding: '8px', 
-                      border: theme === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.08)', 
-                      boxShadow: '0 24px 48px rgba(0,0,0,0.5)', 
-                      position: 'relative', 
-                      height: '650px', 
-                      display: 'flex', 
+                    <div style={{
+                      background: theme === 'dark' ? '#0B0D14' : '#FFFFFF',
+                      borderRadius: '24px',
+                      padding: '8px',
+                      border: theme === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.08)',
+                      boxShadow: '0 24px 48px rgba(0,0,0,0.5)',
+                      position: 'relative',
+                      height: '650px',
+                      display: 'flex',
                       flexDirection: 'column',
                       overflow: 'hidden'
                     }}>
                       {/* Preview Header */}
-                      <div style={{ 
-                        background: theme === 'dark' ? 'rgba(255,255,255,0.02)' : '#F8F9FA', 
-                        padding: '16px', 
-                        borderRadius: '16px 16px 0 0', 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '12px', 
+                      <div style={{
+                        background: theme === 'dark' ? 'rgba(255,255,255,0.02)' : '#F8F9FA',
+                        padding: '16px',
+                        borderRadius: '16px 16px 0 0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
                         borderBottom: theme === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.08)'
                       }}>
                         <div style={{ width: '40px', height: '40px', background: theme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E9ECEF', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -2882,12 +2867,12 @@ echo $response;`;
                       </div>
 
                       {/* Chat Body */}
-                      <div style={{ 
-                        flex: 1, 
-                        overflowY: 'auto', 
-                        display: 'flex', 
-                        flexDirection: 'column', 
-                        gap: '16px', 
+                      <div style={{
+                        flex: 1,
+                        overflowY: 'auto',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '16px',
                         padding: '16px',
                         background: theme === 'dark' ? '#0B0D14' : '#FFFFFF'
                       }}>
@@ -2896,13 +2881,13 @@ echo $response;`;
                         </div>
 
                         {/* Trigger User Message */}
-                        <div style={{ 
-                          alignSelf: 'flex-start', 
-                          background: theme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E9ECEF', 
-                          padding: '12px 16px', 
-                          borderRadius: '16px 16px 16px 4px', 
-                          fontSize: '14px', 
-                          color: theme === 'dark' ? 'white' : '#1E293B', 
+                        <div style={{
+                          alignSelf: 'flex-start',
+                          background: theme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E9ECEF',
+                          padding: '12px 16px',
+                          borderRadius: '16px 16px 16px 4px',
+                          fontSize: '14px',
+                          color: theme === 'dark' ? 'white' : '#1E293B',
                           maxWidth: '85%',
                           border: theme === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.08)'
                         }}>
@@ -2911,12 +2896,12 @@ echo $response;`;
 
                         {/* Bot Response Message */}
                         {botMode === 'qa' && selectedInstance?.status === 'connected' && (
-                          <div style={{ 
-                            alignSelf: 'flex-end', 
-                            background: theme === 'dark' ? 'rgba(245,130,50,0.1)' : '#FFF7ED', padding: '12px 16px', 
-                            borderRadius: '16px 16px 4px 16px', 
-                            fontSize: '14px', 
-                            color: theme === 'dark' ? 'white' : '#1E293B', 
+                          <div style={{
+                            alignSelf: 'flex-end',
+                            background: theme === 'dark' ? 'rgba(245,130,50,0.1)' : '#FFF7ED', padding: '12px 16px',
+                            borderRadius: '16px 16px 4px 16px',
+                            fontSize: '14px',
+                            color: theme === 'dark' ? 'white' : '#1E293B',
                             maxWidth: '85%',
                             border: '1px solid rgba(245,130,50,0.2)'
                           }}>
@@ -2950,28 +2935,28 @@ echo $response;`;
                         {/* Preview Invalid Option Simulation (Only QA) */}
                         {botMode === 'qa' && selectedInstance?.status === 'connected' && interactiveInvalid && (
                           <>
-                            <div style={{ 
-                              alignSelf: 'flex-start', 
-                              background: theme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E9ECEF', 
-                              padding: '12px 16px', 
-                              borderRadius: '16px 16px 16px 4px', 
-                              fontSize: '14px', 
-                              color: theme === 'dark' ? 'white' : '#1E293B', 
+                            <div style={{
+                              alignSelf: 'flex-start',
+                              background: theme === 'dark' ? 'rgba(255,255,255,0.05)' : '#E9ECEF',
+                              padding: '12px 16px',
+                              borderRadius: '16px 16px 16px 4px',
+                              fontSize: '14px',
+                              color: theme === 'dark' ? 'white' : '#1E293B',
                               maxWidth: '85%',
                               border: theme === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.08)',
-                              marginTop: '8px' 
+                              marginTop: '8px'
                             }}>
                               99
                             </div>
-                            <div style={{ 
-                              alignSelf: 'flex-end', 
-                              background: theme === 'dark' ? 'rgba(245,130,50,0.1)' : '#FFF7ED', padding: '12px 16px', 
-                              borderRadius: '16px 16px 4px 16px', 
-                              fontSize: '14px', 
-                              color: theme === 'dark' ? 'white' : '#1E293B', 
+                            <div style={{
+                              alignSelf: 'flex-end',
+                              background: theme === 'dark' ? 'rgba(245,130,50,0.1)' : '#FFF7ED', padding: '12px 16px',
+                              borderRadius: '16px 16px 4px 16px',
+                              fontSize: '14px',
+                              color: theme === 'dark' ? 'white' : '#1E293B',
                               maxWidth: '85%',
                               border: '1px solid rgba(245,130,50,0.2)',
-                              marginTop: '8px' 
+                              marginTop: '8px'
                             }}>
                               <p style={{ margin: 0, whiteSpace: 'pre-wrap', lineHeight: '1.5', color: theme === 'dark' ? '#F87171' : '#EF4444' }}>
                                 {interactiveInvalid}
