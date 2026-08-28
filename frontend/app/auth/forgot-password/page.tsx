@@ -1,14 +1,102 @@
 'use client';
 
-import React from 'react';
+import React, { useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useApp } from '@/lib/context';
 import { useT } from '@/lib/i18n';
 import styles from '../auth.module.css';
 
-export default function ForgotPasswordPage() {
+function ForgotPasswordContent() {
   const { locale } = useApp();
   const t = useT(locale);
+
+  const searchParams = useSearchParams();
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+
+  const [email, setEmail] = useState(searchParams?.get('email') || '');
+  const token = searchParams?.get('token');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    setError('');
+    setMessage('');
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+    if (!apiUrl) {
+      setError('API URL is not configured');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      if (!token) {
+        // المرحلة الأولى: إرسال رابط الاستعادة
+        const response = await fetch(
+          `${apiUrl}/api/v1/auth/forgot-password/`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email }),
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'تعذر إرسال رابط الاستعادة');
+        }
+
+        setMessage('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.');
+      } else {
+        // المرحلة الثانية: تعيين كلمة المرور الجديدة
+        if (newPassword.length < 8) {
+          throw new Error('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+        }
+
+        if (newPassword !== confirmPassword) {
+          throw new Error('كلمتا المرور غير متطابقتين');
+        }
+
+        const response = await fetch(
+          `${apiUrl}/api/v1/auth/reset-password/`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              token,
+              new_password: newPassword,
+            }),
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'تعذر تغيير كلمة المرور');
+        }
+
+        setMessage('تم تغيير كلمة المرور بنجاح. يمكنك الآن تسجيل الدخول.');
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'حدث خطأ غير متوقع'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className={styles.authPage}>
@@ -52,25 +140,79 @@ export default function ForgotPasswordPage() {
             <p className={styles.authSubtitle}>{t('auth.forgotSubtitle')}</p>
           </div>
 
-          <form className={styles.authForm} onSubmit={(e) => e.preventDefault()}>
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>{t('auth.email')}</label>
-              <div className={styles.inputWrapper}>
-                <svg className={styles.inputIcon} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                  <polyline points="22,6 12,13 2,6"/>
-                </svg>
-                <input 
-                  type="email" 
-                  className={styles.formInput}
-                  placeholder={locale === 'ar' ? 'أدخل بريدك الإلكتروني' : 'Enter your email'}
-                  id="forgot-email"
-                />
-              </div>
-            </div>
+          <form className={styles.authForm} onSubmit={handleSubmit}>
+            {!token && (
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>
+                  {t('auth.email')}
+                </label>
 
-            <button type="submit" className={`btn btn-primary btn-lg ${styles.submitBtn}`} id="forgot-submit">
-              {t('auth.resetButton')}
+                <div className={styles.inputWrapper}>
+                  <input
+                    type="email"
+                    className={styles.formInput}
+                    placeholder={locale === 'ar' ? 'أدخل بريدك الإلكتروني' : 'Enter your email'}
+                    id="forgot-email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
+            {token && (
+              <>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>كلمة المرور الجديدة</label>
+                  <div className={styles.inputWrapper}>
+                    <input
+                      type="password"
+                      className={styles.formInput}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="كلمة المرور الجديدة"
+                      required
+                      minLength={8}
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>تأكيد كلمة المرور</label>
+                  <div className={styles.inputWrapper}>
+                    <input
+                      type="password"
+                      className={styles.formInput}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="أعد كتابة كلمة المرور"
+                      required
+                      minLength={8}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {error && (
+              <p style={{ color: '#ef4444', marginBottom: '14px' }}>
+                {error}
+              </p>
+            )}
+
+            {message && (
+              <p style={{ color: '#22c55e', marginBottom: '14px' }}>
+                {message}
+              </p>
+            )}
+
+            <button type="submit" className={`btn btn-primary btn-lg ${styles.submitBtn}`} id="forgot-submit" disabled={loading}>
+              {loading
+                ? 'جاري التنفيذ...'
+                : token
+                  ? 'تغيير كلمة المرور'
+                  : 'إرسال رابط الاستعادة'}
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="22" y1="2" x2="11" y2="13"/>
                 <polygon points="22 2 15 22 11 13 2 9 22 2"/>
@@ -90,5 +232,13 @@ export default function ForgotPasswordPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ForgotPasswordPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ForgotPasswordContent />
+    </Suspense>
   );
 }

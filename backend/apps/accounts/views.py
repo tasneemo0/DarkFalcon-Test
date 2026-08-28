@@ -6,6 +6,12 @@ from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import RegisterSerializer, UserSerializer, ProfileSerializer, AdminRoleSerializer, AdminUserSerializer
 from .models import Profile, AdminRole
+from django.core import signing
+from urllib.parse import quote
+from .email_service import send_resend_email
+from urllib.parse import quote
+from .email_service import send_resend_email
+
 
 User = get_user_model()
 
@@ -25,10 +31,45 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         
-        # Auto-verify email in development/demo mode so user doesn't get blocked
-        # In production, this can be set via email confirmation link
-        user.is_email_verified = True
-        user.save()
+        user.is_email_verified = False
+        user.save(update_fields=["is_email_verified"])
+
+        verification_token = signing.dumps(
+            {"user_id": user.id},
+            salt="email-verification",
+        )
+
+        verification_url = (
+            "https://dark-falcon-test-b2kh.vercel.app/auth/verify-email"
+            f"?token={quote(verification_token)}"
+        )
+
+        send_resend_email(
+            user.email,
+            "تأكيد بريدك الإلكتروني - DarkFalcon",
+            f"""
+            <div style="font-family:Arial,sans-serif;direction:rtl;text-align:right">
+                <h2>مرحبًا بك في DarkFalcon</h2>
+                <p>اضغط على الزر التالي لتأكيد بريدك الإلكتروني:</p>
+
+                <p>
+                    <a href="{verification_url}"
+                       style="
+                            display:inline-block;
+                            background:#f28a38;
+                            color:white;
+                            padding:12px 24px;
+                            text-decoration:none;
+                            border-radius:8px;
+                       ">
+                        تأكيد البريد الإلكتروني
+                    </a>
+                </p>
+
+                <p>صلاحية الرابط 24 ساعة.</p>
+            </div>
+            """,
+        )
 
         tokens = get_tokens_for_user(user)
         user_data = UserSerializer(user).data
@@ -138,53 +179,166 @@ class VerifyEmailView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        email = request.data.get('email')
-        if not email:
-            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
-        
+        token = request.data.get("token")
+
+        if not token:
+            return Response(
+                {"error": "Verification token is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         try:
-            user = User.objects.get(email=email)
-            user.is_email_verified = True
-            user.save()
-            return Response({'message': 'Email verified successfully'}, status=status.HTTP_200_OK)
+            data = signing.loads(
+                token,
+                salt="email-verification",
+                max_age=60 * 60 * 24,
+            )
+
+            user_id = data.get("user_id")
+
+            user = User.objects.get(id=user_id)
+
+            if not user.is_email_verified:
+                user.is_email_verified = True
+                user.save(update_fields=["is_email_verified"])
+
+            return Response(
+                {"message": "Email verified successfully"},
+                status=status.HTTP_200_OK,
+            )
+
+        except signing.SignatureExpired:
+            return Response(
+                {"error": "Verification link has expired"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        except signing.BadSignature:
+            return Response(
+                {"error": "Invalid verification token"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         except User.DoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "User not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
 
 class ForgotPasswordView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        email = request.data.get('email')
+        email = request.data.get("email")
+
         if not email:
-            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
-        
+            return Response(
+                {"error": "Email is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         try:
             user = User.objects.get(email=email)
-            return Response({
-                'message': 'Password reset link sent successfully.',
-                'dev_token': 'mock-reset-token-12345'
-            }, status=status.HTTP_200_OK)
+
+            reset_token = signing.dumps(
+                {"user_id": user.id, "email": user.email},
+                salt="password-reset",
+            )
+
+            reset_url = (
+                "https://dark-falcon-test-b2kh.vercel.app/auth/forgot-password"
+                f"?token={quote(reset_token)}&email={quote(user.email)}"
+            )
+
+            send_resend_email(
+                user.email,
+                "إعادة تعيين كلمة المرور - DarkFalcon",
+                f"""
+                <div style="font-family:Arial,sans-serif;direction:rtl;text-align:right">
+                    <h2>إعادة تعيين كلمة المرور</h2>
+                    <p>وصلنا طلب لإعادة تعيين كلمة مرور حسابك.</p>
+
+                    <p>
+                        <a href="{reset_url}"
+                           style="
+                                display:inline-block;
+                                background:#f28a38;
+                                color:white;
+                                padding:12px 24px;
+                                text-decoration:none;
+                                border-radius:8px;
+                           ">
+                            إعادة تعيين كلمة المرور
+                        </a>
+                    </p>
+
+                    <p>صلاحية الرابط 30 دقيقة.</p>
+                    <p>إذا لم تطلب هذا التغيير، تجاهل الرسالة.</p>
+                </div>
+                """,
+            )
+
+            return Response(
+                {"message": "Password reset email sent successfully."},
+                status=status.HTTP_200_OK,
+            )
+
         except User.DoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "User not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
 
 class ResetPasswordView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        email = request.data.get('email')
-        new_password = request.data.get('new_password')
-        token = request.data.get('token')
-        
-        if not email or not new_password or not token:
-            return Response({'error': 'Email, new_password, and token are required'}, status=status.HTTP_400_BAD_REQUEST)
-        
+        new_password = request.data.get("new_password")
+        token = request.data.get("token")
+
+        if not new_password or not token:
+            return Response(
+                {"error": "new_password and token are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         try:
-            user = User.objects.get(email=email)
+            data = signing.loads(
+                token,
+                salt="password-reset",
+                max_age=60 * 30,
+            )
+
+            user = User.objects.get(id=data.get("user_id"))
+
             user.set_password(new_password)
-            user.save()
-            return Response({'message': 'Password reset successful'}, status=status.HTTP_200_OK)
+            user.save(update_fields=["password"])
+
+            return Response(
+                {"message": "Password reset successful"},
+                status=status.HTTP_200_OK,
+            )
+
+        except signing.SignatureExpired:
+            return Response(
+                {"error": "Password reset link has expired"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        except signing.BadSignature:
+            return Response(
+                {"error": "Invalid password reset token"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         except User.DoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "User not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
 
 class SessionLogsListView(generics.ListAPIView):
     serializer_class = SessionLogSerializer
