@@ -85,8 +85,11 @@ WSGI_APPLICATION = 'darkfalcon.wsgi.application'
 # Database
 # Parses the DATABASE_URL (supports PostgreSQL, SQLite, mysql, etc.)
 DATABASES = {
-    'default': { **env.db(), 'OPTIONS': {'timeout': 20} },
+    'default': env.db(),
 }
+
+if DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
+    DATABASES['default']['OPTIONS'] = {'timeout': 20}
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
