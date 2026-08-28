@@ -4299,26 +4299,8 @@ echo $response;`;
                 </label>
                 <select value={newInstanceType} onChange={(e) => setNewInstanceType(e.target.value)} style={{ width: '100%', padding: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-light)', borderRadius: '4px' }}>
                   <option value="web_qr">{locale === 'ar' ? 'واتساب ويب - مسح كود QR (مستحسن)' : 'WhatsApp Web - QR Scan (Recommended)'}</option>
-                  <option value="meta">{locale === 'ar' ? 'واجهة Meta Cloud API الرسمية' : 'Meta Cloud API Official'}</option>
                 </select>
               </div>
-
-              {newInstanceType === 'meta' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', border: '1px solid var(--border-light)', padding: '16px', borderRadius: '4px' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px' }}>Phone Number ID:</label>
-                    <input type="text" value={newPhoneId} onChange={(e) => setNewPhoneId(e.target.value)} required style={{ width: '100%', padding: '6px', background: 'var(--bg-primary)' }} />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px' }}>WABA Account ID:</label>
-                    <input type="text" value={newWabaId} onChange={(e) => setNewWabaId(e.target.value)} required style={{ width: '100%', padding: '6px', background: 'var(--bg-primary)' }} />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px' }}>Meta Access Token:</label>
-                    <input type="text" value={newAccessToken} onChange={(e) => setNewAccessToken(e.target.value)} required style={{ width: '100%', padding: '6px', background: 'var(--bg-primary)' }} />
-                  </div>
-                </div>
-              )}
 
               {createError && (
                 <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '8px', color: '#ef4444', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
