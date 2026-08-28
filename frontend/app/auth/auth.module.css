@@ -532,6 +532,25 @@
   .divider {
     margin: 16px 0;
   }
+
+  /* ---- Country Custom Dropdown Mobile ---- */
+  .countrySelectBtn {
+    width: clamp(96px, 29vw, 118px);
+    padding: 0 6px 0 8px;
+    gap: 3px;
+  }
+
+  .countryFlag {
+    font-size: 16px;
+  }
+
+  .countryCodeText {
+    font-size: 11.5px;
+  }
+
+  .countryDropdownList {
+    min-width: 190px;
+  }
 }
 
 @media (max-width: 360px) {
@@ -572,6 +591,25 @@
   .submitBtn {
     font-size: 14px;
     padding: 14px 16px;
+  }
+
+  /* ---- Country Custom Dropdown 360px ---- */
+  .countrySelectBtn {
+    width: clamp(82px, 26vw, 98px);
+    padding: 0 4px 0 6px;
+    gap: 2px;
+  }
+
+  .countryFlag {
+    font-size: 14px;
+  }
+
+  .countryCodeText {
+    font-size: 10.5px;
+  }
+
+  .countryDropdownList {
+    min-width: 175px;
   }
 }
 
@@ -931,6 +969,147 @@
 .phoneInput {
   flex: 1;
   min-width: 0;
+}
+
+/* ===== Custom Country Dropdown ===== */
+.countryDropdown {
+  position: relative;
+  flex-shrink: 0;
+  display: flex; /* allows button to fill height */
+}
+
+.countrySelectBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  padding: 0 10px;
+  width: 125px;
+  flex: 1; /* fill countryDropdown height */
+  min-height: 50px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.countrySelectBtn:hover {
+  background: var(--surface-hover);
+}
+
+.countrySelectBtn:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(232,131,58,0.12);
+  outline: none;
+}
+
+.countryFlag {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.countryCodeText {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex: 1;
+  text-align: start;
+  direction: ltr;
+}
+
+.countryChevron {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  transition: transform var(--transition-fast);
+}
+
+.countryChevronOpen {
+  transform: rotate(180deg);
+}
+
+.countryDropdownList {
+  position: absolute;
+  top: calc(100% + 6px);
+  inset-inline-start: 0;
+  z-index: 300;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+  max-height: 230px;
+  overflow-y: auto;
+  min-width: 210px;
+  animation: dropdownFadeIn 0.15s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.countryOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: start;
+  color: var(--text-primary);
+  font-size: 13px;
+  transition: background var(--transition-fast);
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.countryOption:hover {
+  background: var(--surface-hover, rgba(0,0,0,0.04));
+}
+
+.countryOptionActive {
+  background: rgba(232,131,58,0.08);
+  color: var(--primary);
+}
+
+.countryOptionActive .countryOptionCode {
+  color: var(--primary);
+}
+
+.countryOptionFlag {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.countryOptionName {
+  flex: 1;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: start;
+}
+
+.countryOptionCode {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  flex-shrink: 0;
+  direction: ltr;
 }
 
 /* ===== OTP Container ===== */

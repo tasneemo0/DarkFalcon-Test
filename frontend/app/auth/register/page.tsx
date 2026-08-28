@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/lib/context';
@@ -9,21 +9,21 @@ import styles from '../auth.module.css';
 import { apiFetch } from '@/lib/api';
 
 const countries = [
-  { code: '+966', iso: 'SA', name: 'السعودية', nameEn: 'Saudi Arabia' },
-  { code: '+20', iso: 'EG', name: 'مصر', nameEn: 'Egypt' },
-  { code: '+971', iso: 'AE', name: 'الإمارات', nameEn: 'UAE' },
-  { code: '+962', iso: 'JO', name: 'الأردن', nameEn: 'Jordan' },
-  { code: '+965', iso: 'KW', name: 'الكويت', nameEn: 'Kuwait' },
-  { code: '+973', iso: 'BH', name: 'البحرين', nameEn: 'Bahrain' },
-  { code: '+968', iso: 'OM', name: 'عمان', nameEn: 'Oman' },
-  { code: '+974', iso: 'QA', name: 'قطر', nameEn: 'Qatar' },
-  { code: '+964', iso: 'IQ', name: 'العراق', nameEn: 'Iraq' },
-  { code: '+970', iso: 'PS', name: 'فلسطين', nameEn: 'Palestine' },
-  { code: '+212', iso: 'MA', name: 'المغرب', nameEn: 'Morocco' },
-  { code: '+213', iso: 'DZ', name: 'الجزائر', nameEn: 'Algeria' },
-  { code: '+216', iso: 'TN', name: 'تونس', nameEn: 'Tunisia' },
-  { code: '+218', iso: 'LY', name: 'ليبيا', nameEn: 'Libya' },
-  { code: '+967', iso: 'YE', name: 'اليمن', nameEn: 'Yemen' },
+  { code: '+966', iso: 'SA', name: 'السعودية', nameEn: 'Saudi Arabia', flag: '🇸🇦' },
+  { code: '+20',  iso: 'EG', name: 'مصر',       nameEn: 'Egypt',        flag: '🇪🇬' },
+  { code: '+971', iso: 'AE', name: 'الإمارات',  nameEn: 'UAE',          flag: '🇦🇪' },
+  { code: '+962', iso: 'JO', name: 'الأردن',    nameEn: 'Jordan',       flag: '🇯🇴' },
+  { code: '+965', iso: 'KW', name: 'الكويت',    nameEn: 'Kuwait',       flag: '🇰🇼' },
+  { code: '+973', iso: 'BH', name: 'البحرين',   nameEn: 'Bahrain',      flag: '🇧🇭' },
+  { code: '+968', iso: 'OM', name: 'عمان',      nameEn: 'Oman',         flag: '🇴🇲' },
+  { code: '+974', iso: 'QA', name: 'قطر',       nameEn: 'Qatar',        flag: '🇶🇦' },
+  { code: '+964', iso: 'IQ', name: 'العراق',    nameEn: 'Iraq',         flag: '🇮🇶' },
+  { code: '+970', iso: 'PS', name: 'فلسطين',    nameEn: 'Palestine',    flag: '🇵🇸' },
+  { code: '+212', iso: 'MA', name: 'المغرب',    nameEn: 'Morocco',      flag: '🇲🇦' },
+  { code: '+213', iso: 'DZ', name: 'الجزائر',   nameEn: 'Algeria',      flag: '🇩🇿' },
+  { code: '+216', iso: 'TN', name: 'تونس',      nameEn: 'Tunisia',      flag: '🇹🇳' },
+  { code: '+218', iso: 'LY', name: 'ليبيا',     nameEn: 'Libya',        flag: '🇱🇾' },
+  { code: '+967', iso: 'YE', name: 'اليمن',     nameEn: 'Yemen',        flag: '🇾🇪' },
 ];
 
 export default function RegisterPage() {
@@ -45,6 +45,7 @@ export default function RegisterPage() {
   const [regType, setRegType] = useState<'email' | 'phone'>('email');
   const [countryCode, setCountryCode] = useState('+966');
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
+  const countryDropdownRef = useRef<HTMLDivElement>(null);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otpMode, setOtpMode] = useState(false);
   const [otpCode, setOtpCode] = useState('');
@@ -135,6 +136,21 @@ export default function RegisterPage() {
       }
     }
   }, [router, setToken, setUser, locale]);
+
+  // Close country dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (countryDropdownRef.current && !countryDropdownRef.current.contains(e.target as Node)) {
+        setIsCountryDropdownOpen(false);
+      }
+    };
+    if (isCountryDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isCountryDropdownOpen]);
 
   const handleSocialClick = (provider: 'google' | 'facebook') => {
     const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
@@ -561,17 +577,47 @@ export default function RegisterPage() {
                   <div className={styles.formGroup}>
                     <label className={styles.formLabel}>{t('auth.countryCode')}</label>
                     <div className={styles.phoneInputWrapper}>
-                      <select
-                        className={styles.countrySelect}
-                        value={countryCode}
-                        onChange={(e) => setCountryCode(e.target.value)}
-                      >
-                        {countries.map((c) => (
-                          <option key={c.code} value={c.code}>
-                            {`${c.iso} ${c.code}`}
-                          </option>
-                        ))}
-                      </select>
+                      <div className={styles.countryDropdown} ref={countryDropdownRef}>
+                        <button
+                          type="button"
+                          className={styles.countrySelectBtn}
+                          onClick={() => setIsCountryDropdownOpen(prev => !prev)}
+                          aria-expanded={isCountryDropdownOpen}
+                          aria-haspopup="listbox"
+                        >
+                          <span className={styles.countryFlag}>
+                            {countries.find(c => c.code === countryCode)?.flag}
+                          </span>
+                          <span className={styles.countryCodeText}>{countryCode}</span>
+                          <svg
+                            width="13" height="13" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" strokeWidth="2.5"
+                            className={`${styles.countryChevron} ${isCountryDropdownOpen ? styles.countryChevronOpen : ''}`}
+                          >
+                            <polyline points="6 9 12 15 18 9" />
+                          </svg>
+                        </button>
+                        {isCountryDropdownOpen && (
+                          <div className={styles.countryDropdownList} role="listbox">
+                            {countries.map(c => (
+                              <button
+                                key={c.code}
+                                type="button"
+                                role="option"
+                                aria-selected={countryCode === c.code}
+                                className={`${styles.countryOption} ${countryCode === c.code ? styles.countryOptionActive : ''}`}
+                                onClick={() => { setCountryCode(c.code); setIsCountryDropdownOpen(false); }}
+                              >
+                                <span className={styles.countryOptionFlag}>{c.flag}</span>
+                                <span className={styles.countryOptionName}>
+                                  {locale === 'ar' ? c.name : c.nameEn}
+                                </span>
+                                <span className={styles.countryOptionCode}>{c.code}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                       
                       <div className={`${styles.inputWrapper} ${styles.phoneInput}`}>
                         <svg className={styles.inputIcon} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
