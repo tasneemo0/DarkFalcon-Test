@@ -392,17 +392,22 @@
     min-height: 100vh;
     align-items: flex-start;
     padding-top: 48px;
+    box-sizing: border-box;
+    width: 100%;
+    overflow-x: hidden;
   }
 
   .authCard {
     max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
   }
 }
 
 @media (max-width: 480px) {
   .authRight {
-    padding: 20px 16px;
-    padding-top: 36px;
+    padding: 20px 20px;
+    padding-top: 32px;
   }
 
   .authTitle {
@@ -410,12 +415,22 @@
   }
 
   .authSubtitle {
-    font-size: 14px;
+    font-size: 13px;
+  }
+
+  .authHeader {
+    margin-bottom: 20px;
+  }
+
+  .authForm {
+    gap: 16px;
   }
 
   .formInput {
     font-size: 16px; /* prevent zoom on iOS */
     padding: 12px 14px 12px 40px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   [dir="rtl"] .formInput {
@@ -429,10 +444,74 @@
   .submitBtn {
     font-size: 15px;
     padding: 14px 20px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
-  .authHeader {
-    margin-bottom: 24px;
+  .regTabs {
+    padding: 4px;
+    gap: 4px;
+    margin-bottom: 20px;
+  }
+
+  .regTab {
+    padding: 10px 6px;
+    font-size: 12px;
+    gap: 5px;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .regTab svg {
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+  }
+
+  .phoneInputWrapper {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .countrySelect {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .checkbox {
+    font-size: 13px;
+    align-items: flex-start;
+  }
+
+  .checkbox .checkmark {
+    margin-top: 2px;
+  }
+
+  .authFooter {
+    font-size: 13px;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 360px) {
+  .authRight {
+    padding: 16px 16px;
+    padding-top: 28px;
+  }
+
+  .authTitle {
+    font-size: 20px;
+  }
+
+  .regTab {
+    font-size: 11px;
+    padding: 9px 4px;
+    gap: 4px;
+  }
+
+  .regTab svg {
+    width: 13px;
+    height: 13px;
   }
 }
 
@@ -657,6 +736,9 @@
   margin-bottom: 28px;
   position: relative;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 [data-theme="dark"] .regTabs {
@@ -667,6 +749,7 @@
 
 .regTab {
   flex: 1;
+  min-width: 0;
   border: none;
   background: transparent;
   padding: 12px 16px;
@@ -681,12 +764,15 @@
   justify-content: center;
   gap: 8px;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   user-select: none;
 }
 
 .regTab svg {
   transition: transform var(--transition-fast) ease, stroke var(--transition-fast) ease;
   opacity: 0.7;
+  flex-shrink: 0;
 }
 
 .regTab:hover {
@@ -716,6 +802,29 @@
   opacity: 1;
   color: var(--primary);
   transform: scale(1.05);
+}
+
+/* ===== Error Alert ===== */
+.errorAlert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--error-bg, rgba(239, 68, 68, 0.08));
+  color: var(--error, #dc2626);
+  border: 1px solid var(--error, #dc2626);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  width: 100%;
+  box-sizing: border-box;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.errorAlert svg {
+  flex-shrink: 0;
+  margin-top: 1px;
 }
 
 /* ===== Phone Field Layout ===== */
