@@ -9,9 +9,9 @@ from .models import Profile, AdminRole
 from django.core import signing
 from urllib.parse import quote
 from .email_service import send_resend_email
-from urllib.parse import quote
-from .email_service import send_resend_email
+import logging
 
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -44,32 +44,37 @@ class RegisterView(generics.CreateAPIView):
             f"?token={quote(verification_token)}"
         )
 
-        send_resend_email(
-            user.email,
-            "تأكيد بريدك الإلكتروني - DarkFalcon",
-            f"""
-            <div style="font-family:Arial,sans-serif;direction:rtl;text-align:right">
-                <h2>مرحبًا بك في DarkFalcon</h2>
-                <p>اضغط على الزر التالي لتأكيد بريدك الإلكتروني:</p>
+        verification_email_sent = False
+        try:
+            send_resend_email(
+                user.email,
+                "تأكيد بريدك الإلكتروني - DarkFalcon",
+                f"""
+                <div style="font-family:Arial,sans-serif;direction:rtl;text-align:right">
+                    <h2>مرحبًا بك في DarkFalcon</h2>
+                    <p>اضغط على الزر التالي لتأكيد بريدك الإلكتروني:</p>
 
-                <p>
-                    <a href="{verification_url}"
-                       style="
-                            display:inline-block;
-                            background:#f28a38;
-                            color:white;
-                            padding:12px 24px;
-                            text-decoration:none;
-                            border-radius:8px;
-                       ">
-                        تأكيد البريد الإلكتروني
-                    </a>
-                </p>
+                    <p>
+                        <a href="{verification_url}"
+                           style="
+                                display:inline-block;
+                                background:#f28a38;
+                                color:white;
+                                padding:12px 24px;
+                                text-decoration:none;
+                                border-radius:8px;
+                           ">
+                            تأكيد البريد الإلكتروني
+                        </a>
+                    </p>
 
-                <p>صلاحية الرابط 24 ساعة.</p>
-            </div>
-            """,
-        )
+                    <p>صلاحية الرابط 24 ساعة.</p>
+                </div>
+                """,
+            )
+            verification_email_sent = True
+        except Exception as e:
+            logger.exception(f"Failed to send verification email to {user.email}: {e}")
 
         tokens = get_tokens_for_user(user)
         user_data = UserSerializer(user).data
@@ -77,7 +82,8 @@ class RegisterView(generics.CreateAPIView):
         return Response({
             'user': user_data,
             'tokens': tokens,
-            'message': 'Registration successful. Email auto-verified for testing.'
+            'message': 'Registration successful.',
+            'verification_email_sent': verification_email_sent
         }, status=status.HTTP_201_CREATED)
 
 from rest_framework_simplejwt.views import TokenObtainPairView
