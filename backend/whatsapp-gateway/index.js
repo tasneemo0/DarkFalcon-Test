@@ -51,11 +51,26 @@ async function sendWebhook(instanceId, event, data) {
 }
 
 // Initialize WhatsApp connection for an instance
-async function initInstance(instanceId) {
-  if (instances.has(instanceId)) {
-    logger.info(`Instance ${instanceId} already initialized`);
+if (instances.has(instanceId)) {
+  const currentStatus = statuses.get(instanceId);
+
+  logger.info(
+    `Instance ${instanceId} already initialized with status: ${currentStatus}`
+  );
+
+  if (currentStatus === 'connected') {
     return;
   }
+
+  if (currentStatus === 'qrcode' && qrCodes.get(instanceId)) {
+    return;
+  }
+
+  // Session is stuck in connecting/disconnected state.
+  // Allow it to be initialized again.
+  instances.delete(instanceId);
+  qrCodes.delete(instanceId);
+}
 
   const sessionPath = path.join(sessionsDir, `instance_${instanceId}`);
   const { state, saveCreds } = await useMultiFileAuthState(sessionPath);
@@ -163,19 +178,34 @@ async function initInstance(instanceId) {
       }
     }
   });
-}
+
 
 // REST Endpoints
 app.post('/instance/init', async (req, res) => {
   const { instanceId } = req.body;
+
   if (!instanceId) {
     return res.status(400).json({ error: 'instanceId is required' });
   }
+
+  const idStr = instanceId.toString();
+
   try {
-    initInstance(instanceId.toString());
-    res.json({ success: true, message: 'Instance initialization started' });
+    await initInstance(idStr);
+
+    return res.json({
+      success: true,
+      message: 'Instance initialization started',
+      status: statuses.get(idStr) || 'connecting',
+      qr: qrCodes.get(idStr) || null,
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    logger.error(`Failed to initialize instance ${idStr}: ${err.message}`);
+
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
   }
 });
 
