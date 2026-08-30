@@ -5,7 +5,7 @@ import os
 logger = logging.getLogger(__name__)
 
 WHATSAPP_GATEWAY_URL = os.getenv('WHATSAPP_GATEWAY_URL', 'http://localhost:4000')
-
+logger.warning(f"WHATSAPP_GATEWAY_URL runtime value: {WHATSAPP_GATEWAY_URL}")
 def send_meta_whatsapp_message(phone_number_id, access_token, recipient_phone, message_type, payload_data):
     """
     Synchronous helper to send a WhatsApp message via Meta Cloud API.
@@ -88,24 +88,27 @@ def init_web_instance(instance_id):
     Start/initiate WhatsApp session on Node.js gateway
     """
     url = f"{WHATSAPP_GATEWAY_URL}/instance/init"
-    try:
-        response = requests.post(url, json={"instanceId": str(instance_id)}, timeout=10)
-        return response.json()
-    except Exception as e:
-        logger.error(f"Failed to init web instance: {e}")
-        raise e
 
-def logout_web_instance(instance_id):
-    """
-    Log out and clean up session from Node.js gateway
-    """
-    url = f"{WHATSAPP_GATEWAY_URL}/instance/logout"
+    logger.warning(f"Calling WhatsApp Gateway: {url} for instance {instance_id}")
+
     try:
-        response = requests.post(url, json={"instanceId": str(instance_id)}, timeout=10)
+        response = requests.post(
+            url,
+            json={"instanceId": str(instance_id)},
+            timeout=10
+        )
+
+        logger.warning(
+            f"Gateway response: status={response.status_code}, body={response.text}"
+        )
+
+        response.raise_for_status()
         return response.json()
+
     except Exception as e:
-        logger.error(f"Failed to logout web instance: {e}")
-        raise e
+        logger.exception(f"Failed to init web instance: {e}")
+        raise
+
 
 def send_web_whatsapp_message(instance_id, recipient_phone, text, message_type='text', media_url=None, filename=None, caption=None, **kwargs):
     """
