@@ -13,11 +13,12 @@ const path = require('path');
 const axios = require('axios');
 const QRCode = require('qrcode');
 
-require('dotenv').config({ override: true });
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-const DJANGO_WEBHOOK_URL = process.env.DJANGO_WEBHOOK_URL || 'https://darkfalcon-test-production.up.railway.app/api/v1/whatsapp/bot/webhook/';
+const DJANGO_WEBHOOK_URL = process.env.DJANGO_WEBHOOK_URL ||
+'https://darkfalcon-test-production.up.railway.app/api/v1/whatsapp/bot/webhook/';
 console.log('DJANGO_WEBHOOK_URL:', DJANGO_WEBHOOK_URL);
 
 app.use(cors());
