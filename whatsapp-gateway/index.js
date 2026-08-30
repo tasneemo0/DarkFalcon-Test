@@ -17,7 +17,8 @@ require('dotenv').config({ override: true });
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-const DJANGO_WEBHOOK_URL = process.env.DJANGO_WEBHOOK_URL || 'http://127.0.0.1:8000/api/v1/whatsapp/bot/webhook/';
+const DJANGO_WEBHOOK_URL = process.env.DJANGO_WEBHOOK_URL || 'https://darkfalcon-test-production.up.railway.app/api/v1/whatsapp/bot/webhook/';
+console.log('DJANGO_WEBHOOK_URL:', DJANGO_WEBHOOK_URL);
 
 app.use(cors());
 app.use(express.json());
