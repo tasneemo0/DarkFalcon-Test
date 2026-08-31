@@ -1,4 +1,4 @@
-from celery import shared_task
+﻿from celery import shared_task
 import logging
 import requests
 import json
@@ -277,7 +277,7 @@ def handle_inbound_message_task(self, instance_id, sender_phone, message_text):
                         "temperature": 0.3
                     }
                 }
-                response = requests.post(url, json=payload, headers=headers, timeout=15)
+                response = requests.post(url, json=payload, headers=headers, timeout=60)
                 response.raise_for_status()
                 res_data = response.json()
                 candidates = res_data.get('candidates', [])
